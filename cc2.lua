@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v4.1 - POWER HAMMER + AUTO FARM (FIXED) ]] --
+-- [[ DAMIR_DRUN67 HUB v4.23 - POWER HAMMER + AUTO FARM (FIXED) ]] --
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
