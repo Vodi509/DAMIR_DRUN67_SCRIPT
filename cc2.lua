@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.7 - NO CAT, NO IMAGES ]] --
+-- [[ DAMIR_DRUN67 HUB v5.8 - FIX SPAWN + MINIMIZE ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -28,6 +28,23 @@ local function getMyCar()
     return nil
 end
 
+local function clickButton(btn)
+    if not btn then return false end
+    -- Способ 1: firesignal
+    if firesignal and btn.MouseButton1Click then
+        pcall(function() firesignal(btn.MouseButton1Click) end)
+    end
+    -- Способ 2: Fire события
+    if btn.MouseButton1Click then
+        pcall(function() btn.MouseButton1Click:Fire() end)
+    end
+    -- Способ 3: прямой Invoke
+    if btn:IsA("TextButton") and btn.Invoke then
+        pcall(function() btn:Invoke() end)
+    end
+    return true
+end
+
 local function findSpawn()
     local pg = localPlayer:WaitForChild("PlayerGui")
     for _, g in pairs(pg:GetChildren()) do
@@ -35,7 +52,11 @@ local function findSpawn()
             for _, o in pairs(g:GetDescendants()) do
                 if (o:IsA("TextButton") or o:IsA("ImageButton")) and o.Visible and o.Active then
                     local t = o:IsA("TextButton") and o.Text or ""
-                    if o.Name:lower():find("spawn") or t:lower():find("spawn") or t:lower():find("car") then
+                    local n = o.Name:lower()
+                    -- Расширенный поиск
+                    if n:find("spawn") or n:find("get") or n:find("vehicle") or n:find("car") or
+                       t:lower():find("spawn") or t:lower():find("car") or t:lower():find("get") or
+                       t:lower():find("спавн") or t:lower():find("машин") then
                         if not t:lower():find("vip") and not t:lower():find("pass") then
                             return o
                         end
@@ -50,12 +71,7 @@ end
 local function clickSpawn()
     local b = findSpawn()
     if b then
-        pcall(function()
-            if firesignal and b.MouseButton1Click then
-                firesignal(b.MouseButton1Click)
-            end
-        end)
-        return true
+        return clickButton(b)
     end
     return false
 end
@@ -70,6 +86,7 @@ local screenGui = Instance.new("ScreenGui", g)
 screenGui.Name = "FarmHub"
 screenGui.ResetOnSpawn = false
 
+-- Главное окно
 local main = Instance.new("Frame", screenGui)
 main.Size = UDim2.new(0, 280, 0, 160)
 main.Position = UDim2.new(0.5, -140, 0.3, 0)
@@ -79,15 +96,82 @@ main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 8)
 
-local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-title.Text = "DAMIR HUB v5.7"
+-- Заголовок
+local header = Instance.new("Frame", main)
+header.Size = UDim2.new(1, 0, 0, 30)
+header.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+header.BorderSizePixel = 0
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 8)
+
+local title = Instance.new("TextLabel", header)
+title.Size = UDim2.new(1, -50, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "DAMIR HUB v5.8"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
-Instance.new("UICorner", title).CornerRadius = UDim.new(0, 8)
+title.TextXAlignment = Enum.TextXAlignment.Left
 
+-- Кнопка сворачивания
+local minBtn = Instance.new("TextButton", header)
+minBtn.Size = UDim2.new(0, 20, 0, 20)
+minBtn.Position = UDim2.new(1, -45, 0, 5)
+minBtn.BackgroundColor3 = Color3.fromRGB(160, 100, 255)
+minBtn.Text = "—"
+minBtn.TextColor3 = Color3.new(1, 1, 1)
+minBtn.Font = Enum.Font.GothamBold
+minBtn.TextSize = 12
+minBtn.BorderSizePixel = 0
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 10)
+
+-- Кнопка закрытия
+local closeBtn = Instance.new("TextButton", header)
+closeBtn.Size = UDim2.new(0, 20, 0, 20)
+closeBtn.Position = UDim2.new(1, -22, 0, 5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 12
+closeBtn.BorderSizePixel = 0
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 10)
+
+-- Мини-окно (восстановление)
+local miniFrame = Instance.new("Frame", screenGui)
+miniFrame.Size = UDim2.new(0, 100, 0, 25)
+miniFrame.Position = UDim2.new(0.02, 0, 0.1, 0)
+miniFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+miniFrame.BorderSizePixel = 0
+miniFrame.Visible = false
+miniFrame.Active = true
+miniFrame.Draggable = true
+Instance.new("UICorner", miniFrame).CornerRadius = UDim.new(0, 5)
+
+local restoreBtn = Instance.new("TextButton", miniFrame)
+restoreBtn.Size = UDim2.new(1, 0, 1, 0)
+restoreBtn.BackgroundTransparency = 1
+restoreBtn.Text = "⚡ DAMIR HUB"
+restoreBtn.TextColor3 = Color3.new(1, 1, 1)
+restoreBtn.Font = Enum.Font.GothamBold
+restoreBtn.TextSize = 11
+
+-- Логика сворачивания/закрытия
+minBtn.MouseButton1Click:Connect(function()
+    main.Visible = false
+    miniFrame.Visible = true
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+restoreBtn.MouseButton1Click:Connect(function()
+    main.Visible = true
+    miniFrame.Visible = false
+end)
+
+-- Остальной контент
 local status = Instance.new("TextLabel", main)
 status.Size = UDim2.new(1, -20, 0, 24)
 status.Position = UDim2.new(0, 10, 0, 38)
@@ -145,7 +229,6 @@ autoBtn.Font = Enum.Font.GothamBold
 autoBtn.TextSize = 14
 Instance.new("UICorner", autoBtn).CornerRadius = UDim.new(0, 5)
 
--- Обновление статуса машины
 spawn(function()
     while wait(0.5) do
         pcall(function()
@@ -196,7 +279,8 @@ autoBtn.MouseButton1Click:Connect(function()
                 local c = getMyCar()
                 if not c then
                     status.Text = "Респавн..."
-                    clickSpawn()
+                    local ok = clickSpawn()
+                    if not ok then status.Text = "Кнопка не найдена" end
                     wait(3)
                 else
                     local d = false
