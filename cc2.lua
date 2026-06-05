@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.11 - REAL CAR NAME ]] --
+-- [[ DAMIR_DRUN67 HUB v5.13 - AUTO-CLICK OFFSET ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -10,18 +10,15 @@ local function getMyCar()
     if char:FindFirstChild("Humanoid") and char.Humanoid.SeatPart then
         local seat = char.Humanoid.SeatPart
         if seat:IsA("VehicleSeat") then
-            -- Поднимаемся вверх от сиденья до первой Model, которая не "Body"
             local current = seat
             while current do
                 if current:IsA("Model") and current.Name ~= "Body" then
                     return current
                 elseif current:IsA("Model") and current.Name == "Body" then
-                    -- Body найден, берём родителя, если это Model с именем не Body
                     local parent = current.Parent
                     if parent and parent:IsA("Model") and parent.Name ~= "Body" then
                         return parent
                     end
-                    -- Если родитель тоже Body, идём дальше вверх
                     current = current.Parent
                 else
                     current = current.Parent
@@ -29,7 +26,6 @@ local function getMyCar()
             end
         end
     end
-    -- Запасной поиск по папкам
     local folders = {workspace:FindFirstChild("Vehicles"), workspace}
     for _, folder in pairs(folders) do
         if folder then
@@ -44,35 +40,47 @@ local function getMyCar()
     return nil
 end
 
--- Улучшенный клик (без изменений)
+-- Автоматическое смещение клика (подобрано по скриншоту)
+local AUTO_OFFSET_X = 12   -- пикселей вправо
+local AUTO_OFFSET_Y = 15   -- пикселей вниз
+
 local function clickButton(btn)
     if not btn then return false end
     local success = false
+
+    -- 1. firesignal
     if firesignal and btn.MouseButton1Click then
         pcall(function() firesignal(btn.MouseButton1Click) end)
         success = true
     end
+    -- 2. Fire события
     if btn.MouseButton1Click then
         pcall(function() btn.MouseButton1Click:Fire() end)
         success = true
     end
+    -- 3. RemoteEvent внутри кнопки
     for _, child in pairs(btn:GetDescendants()) do
         if child:IsA("RemoteEvent") then
             pcall(function() child:FireServer() end)
             success = true
         end
     end
+    -- 4. Invoke
     if btn:IsA("TextButton") and btn.Invoke then
         pcall(function() btn:Invoke() end)
         success = true
     end
+    -- 5. Эмуляция мыши с авто-смещением
     pcall(function()
         local vim = game:GetService("VirtualInputManager")
         local pos = btn.AbsolutePosition + btn.AbsoluteSize / 2
+        pos = Vector2.new(pos.X + AUTO_OFFSET_X, pos.Y + AUTO_OFFSET_Y)
+
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, true, game, 1)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 1)
         wait(0.03)
+        -- второй клик с микро-сдвигом
         vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, true, game, 1)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, false, game, 1)
@@ -155,7 +163,7 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1, -50, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "DAMIR HUB v5.11"
+title.Text = "DAMIR HUB v5.13"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
