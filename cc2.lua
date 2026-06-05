@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v4.23 - POWER HAMMER + AUTO FARM (FIXED) ]] --
+-- [[ DAMIR_DRUN67 HUB v4.24 - STABLE FIX ]] --
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -138,10 +138,9 @@ local function clickSpawn()
     local btn = findSpawnButton()
     if btn then
         pcall(function()
-            firesignal(btn.MouseButton1Click)
-        end)
-        pcall(function()
-            btn.Activated:Fire()
+            if btn.MouseButton1Click then
+                firesignal(btn.MouseButton1Click)
+            end
         end)
         return true
     end
@@ -205,7 +204,7 @@ local titleText = Instance.new("TextLabel", titleBar)
 titleText.Size = UDim2.new(1, -80, 1, 0)
 titleText.Position = UDim2.new(0, 14, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "🐱 DAMIR HUB v4.1"
+titleText.Text = "🐱 DAMIR HUB v4.24"
 titleText.TextColor3 = Theme.TextMain
 titleText.Font = Enum.Font.GothamBold
 titleText.TextSize = 13
@@ -330,7 +329,6 @@ farmTitle.Font = Enum.Font.GothamBold
 farmTitle.TextSize = 11
 farmTitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- Инфо о машине
 local carInfo = Instance.new("Frame", farmTab)
 carInfo.Size = UDim2.new(1, 0, 0, 32)
 carInfo.BackgroundColor3 = Theme.InnerBg
@@ -361,7 +359,6 @@ task.spawn(function()
     end
 end)
 
--- Статистика
 local statsLabel = Instance.new("TextLabel", farmTab)
 statsLabel.Size = UDim2.new(1, 0, 0, 18)
 statsLabel.BackgroundTransparency = 1
@@ -460,10 +457,6 @@ local function runAutoFarm()
             clickSpawn()
             task.wait(3)
             car = getMyCar()
-            if not car then
-                task.wait(2)
-                -- идём на следующий цикл
-            end
         end
         
         if car then
@@ -490,6 +483,8 @@ local function runAutoFarm()
             else
                 task.wait(1)
             end
+        else
+            task.wait(2)
         end
     end
 end
@@ -587,4 +582,10 @@ resetBtn.BorderSizePixel = 0
 Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 5)
 
 resetBtn.MouseButton1Click:Connect(function()
-   
+    hammerHits = 0
+    carsDestroyed = 0
+    autoFarmCount = 0
+    statsLabel.Text = "Ударов: 0 | Сломано: 0 | Авто: 0"
+end)
+
+-- ===========
