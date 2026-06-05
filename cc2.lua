@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.4 - EXTREME HAMMER ]] --
+-- [[ DAMIR_DRUN67 HUB v5.5 - EXTREME HAMMER (FIX) ]] --
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -122,7 +122,7 @@ local titleText = Instance.new("TextLabel", titleBar)
 titleText.Size = UDim2.new(1, -70, 1, 0)
 titleText.Position = UDim2.new(0, 14, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "🐱 DAMIR HUB v5.4"
+titleText.Text = "🐱 DAMIR HUB v5.5"
 titleText.TextColor3 = Theme.TextMain
 titleText.Font = Enum.Font.GothamBold
 titleText.TextSize = 13
@@ -207,7 +207,7 @@ tabs[1].Visible = true
 local farmTitle = Instance.new("TextLabel", farmTab)
 farmTitle.Size = UDim2.new(1, 0, 0, 20)
 farmTitle.BackgroundTransparency = 1
-farmTitle.Text = "ПРОГРАММА «МОЛОТ» v5.4"
+farmTitle.Text = "ПРОГРАММА «МОЛОТ» v5.5"
 farmTitle.TextColor3 = Theme.TextMain
 farmTitle.Font = Enum.Font.GothamBold
 farmTitle.TextSize = 12
@@ -228,8 +228,9 @@ carLabel.Font = Enum.Font.GothamBold
 carLabel.TextSize = 11
 carLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-task.spawn(function()
-    while task.wait(0.3) do
+-- Обновление машины (используем wait)
+spawn(function()
+    while wait(0.3) do
         pcall(function()
             local c = getMyCar()
             if c then
@@ -261,9 +262,9 @@ local function doHit()
     if not r then return false end
     r.Velocity = Vector3.zero
     r.CFrame = CFrame.new(r.Position.X, 200, r.Position.Z)
-    task.wait(0.15)
+    wait(0.15)
     r.Velocity = Vector3.new(0, -1500, 0)
-    task.wait(1.0)
+    wait(1.0)
     if not c.Parent then cd = cd + 1 return true end
     return false
 end
@@ -288,12 +289,12 @@ hammerBtn.MouseButton1Click:Connect(function()
         hammerBtn.Text = "🔨 МОЛОТ РАБОТАЕТ"
         hammerBtn.TextColor3 = Theme.StatusOnline
         hammerBtn.BackgroundColor3 = Color3.fromRGB(20, 35, 30)
-        task.spawn(function()
+        spawn(function()
             while ha do
                 doHit()
                 hh = hh + 1
                 statsLabel.Text = "Ударов: " .. hh .. " | Сломано: " .. cd .. " | Авто: " .. afc
-                task.wait(0.3)
+                wait(0.3)
             end
         end)
     else
@@ -323,13 +324,13 @@ autoBtn.MouseButton1Click:Connect(function()
         autoBtn.Text = "🤖 АВТО-ФАРМ РАБОТАЕТ"
         autoBtn.TextColor3 = Theme.StatusOnline
         autoBtn.BackgroundColor3 = Color3.fromRGB(40, 25, 10)
-        task.spawn(function()
+        spawn(function()
             while aa do
                 local c = getMyCar()
                 if not c then
                     carLabel.Text = "🚗 Респавн..."
                     clickSpawn()
-                    task.wait(3)
+                    wait(3)
                 else
                     local d = false
                     for i = 1, 20 do
@@ -338,16 +339,16 @@ autoBtn.MouseButton1Click:Connect(function()
                         hh = hh + 1
                         statsLabel.Text = "Ударов: " .. hh .. " | Сломано: " .. cd .. " | Авто: " .. afc
                         if d then break end
-                        task.wait(0.2)
+                        wait(0.2)
                     end
                     if d then
                         afc = afc + 1
                         statsLabel.Text = "Ударов: " .. hh .. " | Сломано: " .. cd .. " | Авто: " .. afc
                         carLabel.Text = "💀 Уничтожена!"
-                        task.wait(1)
+                        wait(1)
                         carLabel.Text = "🚗 Респавн..."
                         clickSpawn()
-                        task.wait(3)
+                        wait(3)
                     end
                 end
             end
