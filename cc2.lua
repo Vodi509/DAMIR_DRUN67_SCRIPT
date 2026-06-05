@@ -1,3 +1,4 @@
+-- DAMIR HUB v5.0 - MINIMAL
 local p = game.Players.LocalPlayer
 local g = p:WaitForChild("PlayerGui")
 for _, v in pairs(g:GetChildren()) do if v.Name == "Hub" then v:Destroy() end end
@@ -26,7 +27,7 @@ Instance.new("UICorner", m).CornerRadius = UDim.new(0, 8)
 local h = Instance.new("TextLabel", m)
 h.Size = UDim2.new(1, -40, 0, 30)
 h.Position = UDim2.new(0, 10, 0, 8)
-h.Text = "DAMIR HUB"
+h.Text = "DAMIR HUB v5.0"
 h.TextColor3 = Color3.new(1, 1, 1)
 h.Font = Enum.Font.GothamBold
 h.TextSize = 14
@@ -48,7 +49,7 @@ local st = Instance.new("TextLabel", m)
 st.Size = UDim2.new(1, -20, 0, 28)
 st.Position = UDim2.new(0, 10, 0, 45)
 st.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-st.Text = "Готов"
+st.Text = "v5.0 - Готов"
 st.TextColor3 = Color3.new(1, 1, 1)
 st.Font = Enum.Font.GothamBold
 st.TextSize = 12
@@ -114,7 +115,7 @@ hb.MouseButton1Click:Connect(function()
         ab.TextColor3 = Color3.fromRGB(255, 150, 30)
         hb.Text = "MOLOT ON"
         hb.TextColor3 = Color3.fromRGB(0, 255, 150)
-        spawn(function() while ha do hit() st.Text = getCar() and "Бью..." or "Нет машины" task.wait(0.3) end end)
+        spawn(function() while ha do hit() st.Text = "v5.0 - Бью..." task.wait(0.3) end end)
     else
         hb.Text = "MOLOT"
         hb.TextColor3 = Color3.fromRGB(255, 60, 60)
@@ -133,14 +134,14 @@ ab.MouseButton1Click:Connect(function()
         spawn(function()
             while aa do
                 if not getCar() then
-                    st.Text = "Нет машины"
+                    st.Text = "v5.0 - Нет машины"
                     task.wait(2)
                 else
                     for i = 1, 20 do
                         if not aa then break end
                         hit()
-                        st.Text = "Удар " .. i
-                        if not getCar() then st.Text = "Сломана!" task.wait(1) break end
+                        st.Text = "v5.0 - Удар " .. i
+                        if not getCar() then st.Text = "v5.0 - Сломана!" task.wait(1) break end
                         task.wait(0.2)
                     end
                 end
