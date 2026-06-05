@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.8 - FIX SPAWN + MINIMIZE ]] --
+-- [[ DAMIR_DRUN67 HUB v5.9 - FIX NAME + RESPAWN ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -11,7 +11,24 @@ local function getMyCar()
         local seat = char.Humanoid.SeatPart
         if seat:IsA("VehicleSeat") then
             local car = seat:FindFirstAncestorOfClass("Model")
-            if car then return car end
+            if car then
+                -- Исправление "Body": ищем читаемое имя
+                if car.Name == "Body" then
+                    local parent = car.Parent
+                    if parent and parent:IsA("Model") then
+                        return parent
+                    end
+                    -- Поиск в родительской модели детали с именем не "Body"
+                    if parent and parent:IsA("Model") then
+                        for _, child in pairs(parent:GetChildren()) do
+                            if child:IsA("Model") and child.Name ~= "Body" then
+                                return child
+                            end
+                        end
+                    end
+                end
+                return car
+            end
         end
     end
     local folders = {workspace:FindFirstChild("Vehicles"), workspace}
@@ -28,44 +45,75 @@ local function getMyCar()
     return nil
 end
 
+-- Улучшенный клик по кнопке спавна
 local function clickButton(btn)
     if not btn then return false end
+    local success = false
     -- Способ 1: firesignal
     if firesignal and btn.MouseButton1Click then
         pcall(function() firesignal(btn.MouseButton1Click) end)
+        success = true
     end
     -- Способ 2: Fire события
     if btn.MouseButton1Click then
         pcall(function() btn.MouseButton1Click:Fire() end)
+        success = true
     end
-    -- Способ 3: прямой Invoke
+    -- Способ 3: Invoke
     if btn:IsA("TextButton") and btn.Invoke then
         pcall(function() btn:Invoke() end)
+        success = true
     end
-    return true
+    -- Способ 4: эмуляция мыши (VirtualInputManager)
+    pcall(function()
+        local vim = game:GetService("VirtualInputManager")
+        local pos = btn.AbsolutePosition + btn.AbsoluteSize / 2
+        vim:SendMouseButtonEvent(pos.X, pos.Y, 0, true, game, 1)
+        wait(0.05)
+        vim:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 1)
+        success = true
+    end)
+    return success
 end
 
 local function findSpawn()
     local pg = localPlayer:WaitForChild("PlayerGui")
+    local candidates = {}
     for _, g in pairs(pg:GetChildren()) do
         if g:IsA("ScreenGui") then
             for _, o in pairs(g:GetDescendants()) do
                 if (o:IsA("TextButton") or o:IsA("ImageButton")) and o.Visible and o.Active then
                     local t = o:IsA("TextButton") and o.Text or ""
                     local n = o.Name:lower()
-                    -- Расширенный поиск
+                    -- Расширенный поиск: spawn, car, vehicle, get, бесплатно, free, машина, спавн
                     if n:find("spawn") or n:find("get") or n:find("vehicle") or n:find("car") or
                        t:lower():find("spawn") or t:lower():find("car") or t:lower():find("get") or
-                       t:lower():find("спавн") or t:lower():find("машин") then
-                        if not t:lower():find("vip") and not t:lower():find("pass") then
-                            return o
+                       t:lower():find("free") or t:lower():find("бесплат") or t:lower():find("спавн") or t:lower():find("машин") then
+                        if not t:lower():find("vip") and not t:lower():find("pass") and not t:lower():find("premium") then
+                            table.insert(candidates, o)
                         end
                     end
                 end
             end
         end
     end
-    return nil
+    -- Если не нашли по названию, ищем по расположению внизу экрана
+    if #candidates == 0 then
+        for _, g in pairs(pg:GetChildren()) do
+            if g:IsA("ScreenGui") then
+                for _, o in pairs(g:GetDescendants()) do
+                    if (o:IsA("TextButton") or o:IsA("ImageButton")) and o.Visible and o.Active then
+                        local pos = o.AbsolutePosition
+                        if pos.Y > 200 then -- кнопки спавна обычно внизу
+                            table.insert(candidates, o)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    -- Возвращаем первую (или nil)
+    return candidates[1]
 end
 
 local function clickSpawn()
@@ -86,7 +134,6 @@ local screenGui = Instance.new("ScreenGui", g)
 screenGui.Name = "FarmHub"
 screenGui.ResetOnSpawn = false
 
--- Главное окно
 local main = Instance.new("Frame", screenGui)
 main.Size = UDim2.new(0, 280, 0, 160)
 main.Position = UDim2.new(0.5, -140, 0.3, 0)
@@ -96,7 +143,6 @@ main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 8)
 
--- Заголовок
 local header = Instance.new("Frame", main)
 header.Size = UDim2.new(1, 0, 0, 30)
 header.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
@@ -107,13 +153,12 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1, -50, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "DAMIR HUB v5.8"
+title.Text = "DAMIR HUB v5.9"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
 title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Кнопка сворачивания
 local minBtn = Instance.new("TextButton", header)
 minBtn.Size = UDim2.new(0, 20, 0, 20)
 minBtn.Position = UDim2.new(1, -45, 0, 5)
@@ -125,7 +170,6 @@ minBtn.TextSize = 12
 minBtn.BorderSizePixel = 0
 Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 10)
 
--- Кнопка закрытия
 local closeBtn = Instance.new("TextButton", header)
 closeBtn.Size = UDim2.new(0, 20, 0, 20)
 closeBtn.Position = UDim2.new(1, -22, 0, 5)
@@ -137,7 +181,6 @@ closeBtn.TextSize = 12
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 10)
 
--- Мини-окно (восстановление)
 local miniFrame = Instance.new("Frame", screenGui)
 miniFrame.Size = UDim2.new(0, 100, 0, 25)
 miniFrame.Position = UDim2.new(0.02, 0, 0.1, 0)
@@ -156,22 +199,18 @@ restoreBtn.TextColor3 = Color3.new(1, 1, 1)
 restoreBtn.Font = Enum.Font.GothamBold
 restoreBtn.TextSize = 11
 
--- Логика сворачивания/закрытия
 minBtn.MouseButton1Click:Connect(function()
     main.Visible = false
     miniFrame.Visible = true
 end)
-
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
-
 restoreBtn.MouseButton1Click:Connect(function()
     main.Visible = true
     miniFrame.Visible = false
 end)
 
--- Остальной контент
 local status = Instance.new("TextLabel", main)
 status.Size = UDim2.new(1, -20, 0, 24)
 status.Position = UDim2.new(0, 10, 0, 38)
@@ -192,7 +231,6 @@ statsLabel.Font = Enum.Font.Gotham
 statsLabel.TextSize = 10
 statsLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Переменные
 local ha, aa, hh, cd, afc = false, false, 0, 0, 0
 
 local function doHit()
@@ -242,7 +280,6 @@ spawn(function()
     end
 end)
 
--- Молот
 hammerBtn.MouseButton1Click:Connect(function()
     ha = not ha
     if ha then
@@ -265,7 +302,6 @@ hammerBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Автофарм
 autoBtn.MouseButton1Click:Connect(function()
     aa = not aa
     if aa then
