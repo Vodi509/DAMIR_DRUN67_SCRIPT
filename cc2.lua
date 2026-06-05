@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.13 - AUTO-CLICK OFFSET ]] --
+-- [[ DAMIR_DRUN67 HUB v5.14 - PRECISE SPAWN CLICK ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -40,9 +40,9 @@ local function getMyCar()
     return nil
 end
 
--- Автоматическое смещение клика (подобрано по скриншоту)
-local AUTO_OFFSET_X = 12   -- пикселей вправо
-local AUTO_OFFSET_Y = 15   -- пикселей вниз
+-- Точное смещение по твоим замерам
+local AUTO_OFFSET_X = 7    -- пикселей вправо
+local AUTO_OFFSET_Y = 11   -- пикселей вниз
 
 local function clickButton(btn)
     if not btn then return false end
@@ -70,7 +70,7 @@ local function clickButton(btn)
         pcall(function() btn:Invoke() end)
         success = true
     end
-    -- 5. Эмуляция мыши с авто-смещением
+    -- 5. Эмуляция мыши с точным смещением
     pcall(function()
         local vim = game:GetService("VirtualInputManager")
         local pos = btn.AbsolutePosition + btn.AbsoluteSize / 2
@@ -80,7 +80,7 @@ local function clickButton(btn)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 1)
         wait(0.03)
-        -- второй клик с микро-сдвигом
+        -- второй клик с микро-сдвигом для надёжности
         vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, true, game, 1)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, false, game, 1)
@@ -163,7 +163,7 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1, -50, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "DAMIR HUB v5.13"
+title.Text = "DAMIR HUB v5.14"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
