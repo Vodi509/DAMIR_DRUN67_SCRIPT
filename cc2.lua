@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.9 - FIX NAME + RESPAWN ]] --
+-- [[ DAMIR_DRUN67 HUB v5.11 - REAL CAR NAME ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -10,27 +10,26 @@ local function getMyCar()
     if char:FindFirstChild("Humanoid") and char.Humanoid.SeatPart then
         local seat = char.Humanoid.SeatPart
         if seat:IsA("VehicleSeat") then
-            local car = seat:FindFirstAncestorOfClass("Model")
-            if car then
-                -- Исправление "Body": ищем читаемое имя
-                if car.Name == "Body" then
-                    local parent = car.Parent
-                    if parent and parent:IsA("Model") then
+            -- Поднимаемся вверх от сиденья до первой Model, которая не "Body"
+            local current = seat
+            while current do
+                if current:IsA("Model") and current.Name ~= "Body" then
+                    return current
+                elseif current:IsA("Model") and current.Name == "Body" then
+                    -- Body найден, берём родителя, если это Model с именем не Body
+                    local parent = current.Parent
+                    if parent and parent:IsA("Model") and parent.Name ~= "Body" then
                         return parent
                     end
-                    -- Поиск в родительской модели детали с именем не "Body"
-                    if parent and parent:IsA("Model") then
-                        for _, child in pairs(parent:GetChildren()) do
-                            if child:IsA("Model") and child.Name ~= "Body" then
-                                return child
-                            end
-                        end
-                    end
+                    -- Если родитель тоже Body, идём дальше вверх
+                    current = current.Parent
+                else
+                    current = current.Parent
                 end
-                return car
             end
         end
     end
+    -- Запасной поиск по папкам
     local folders = {workspace:FindFirstChild("Vehicles"), workspace}
     for _, folder in pairs(folders) do
         if folder then
@@ -45,32 +44,38 @@ local function getMyCar()
     return nil
 end
 
--- Улучшенный клик по кнопке спавна
+-- Улучшенный клик (без изменений)
 local function clickButton(btn)
     if not btn then return false end
     local success = false
-    -- Способ 1: firesignal
     if firesignal and btn.MouseButton1Click then
         pcall(function() firesignal(btn.MouseButton1Click) end)
         success = true
     end
-    -- Способ 2: Fire события
     if btn.MouseButton1Click then
         pcall(function() btn.MouseButton1Click:Fire() end)
         success = true
     end
-    -- Способ 3: Invoke
+    for _, child in pairs(btn:GetDescendants()) do
+        if child:IsA("RemoteEvent") then
+            pcall(function() child:FireServer() end)
+            success = true
+        end
+    end
     if btn:IsA("TextButton") and btn.Invoke then
         pcall(function() btn:Invoke() end)
         success = true
     end
-    -- Способ 4: эмуляция мыши (VirtualInputManager)
     pcall(function()
         local vim = game:GetService("VirtualInputManager")
         local pos = btn.AbsolutePosition + btn.AbsoluteSize / 2
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, true, game, 1)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 1)
+        wait(0.03)
+        vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, true, game, 1)
+        wait(0.05)
+        vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, false, game, 1)
         success = true
     end)
     return success
@@ -85,7 +90,6 @@ local function findSpawn()
                 if (o:IsA("TextButton") or o:IsA("ImageButton")) and o.Visible and o.Active then
                     local t = o:IsA("TextButton") and o.Text or ""
                     local n = o.Name:lower()
-                    -- Расширенный поиск: spawn, car, vehicle, get, бесплатно, free, машина, спавн
                     if n:find("spawn") or n:find("get") or n:find("vehicle") or n:find("car") or
                        t:lower():find("spawn") or t:lower():find("car") or t:lower():find("get") or
                        t:lower():find("free") or t:lower():find("бесплат") or t:lower():find("спавн") or t:lower():find("машин") then
@@ -97,14 +101,13 @@ local function findSpawn()
             end
         end
     end
-    -- Если не нашли по названию, ищем по расположению внизу экрана
     if #candidates == 0 then
         for _, g in pairs(pg:GetChildren()) do
             if g:IsA("ScreenGui") then
                 for _, o in pairs(g:GetDescendants()) do
                     if (o:IsA("TextButton") or o:IsA("ImageButton")) and o.Visible and o.Active then
                         local pos = o.AbsolutePosition
-                        if pos.Y > 200 then -- кнопки спавна обычно внизу
+                        if pos.Y > 200 then
                             table.insert(candidates, o)
                         end
                     end
@@ -112,7 +115,6 @@ local function findSpawn()
             end
         end
     end
-    -- Возвращаем первую (или nil)
     return candidates[1]
 end
 
@@ -153,7 +155,7 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1, -50, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "DAMIR HUB v5.9"
+title.Text = "DAMIR HUB v5.11"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
