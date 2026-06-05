@@ -1,457 +1,331 @@
--- CC2 AUTOFARM v6.0 - Умный бот с крашерами и спавном
--- Для Delta Executor
--- GitHub: github.com/Vodi509/DAMIR_DRUN67_SCRIPT
+-- [[ DAMIR_DRUN67 HUB v3.0 - INFINITE AUTOFARM EDITION ]] --
 
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local localPlayer = Players.LocalPlayer
 
--- Очистка старого GUI
-for _, v in pairs(playerGui:GetChildren()) do
-    if v.Name == "CC2_Farm" then v:Destroy() end
-end
+-- === СТРОГАЯ ДИЗАЙН-СИСТЕМА (КИБЕРПАНК) ===
+local Theme = {
+    MainBg = Color3.fromRGB(15, 16, 22),
+    InnerBg = Color3.fromRGB(22, 24, 33),
+    StrokeDefault = Color3.fromRGB(38, 42, 56),
+    StatusOnline = Color3.fromRGB(0, 255, 163),
+    StatusOffline = Color3.fromRGB(255, 46, 92),
+    BtnBg = Color3.fromRGB(30, 33, 45),
+    BtnStroke = Color3.fromRGB(52, 58, 77),
+    BtnHover = Color3.fromRGB(255, 46, 92),
+    TextMain = Color3.fromRGB(255, 255, 255),
+    TextSub = Color3.fromRGB(125, 131, 150),
+    AccentGlow = Color3.fromRGB(0, 200, 255)
+}
 
--- ==================== GUI ====================
-local screen = Instance.new("ScreenGui")
-screen.Name = "CC2_Farm"
-screen.ResetOnSpawn = false
-screen.Parent = playerGui
+local MemeIds = {
+    "rbxassetid://18314115147", 
+    "rbxassetid://6072171427",  
+    "rbxassetid://6072166311",  
+    "rbxassetid://6072153923"   
+}
 
-local main = Instance.new("Frame", screen)
-main.Size = UDim2.new(0, 340, 0, 320)
-main.Position = UDim2.new(0.5, -170, 0.3, 0)
-main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-main.BorderSizePixel = 0
-main.Active = true
-main.Draggable = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 6)
+-- === СОЗДАНИЕ ИНТЕРФЕЙСА ===
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SpeedHubDamir"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
 
-local header = Instance.new("Frame", main)
-header.Size = UDim2.new(1, 0, 0, 35)
-header.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-header.BorderSizePixel = 0
-Instance.new("UICorner", header).CornerRadius = UDim.new(0, 6)
+local success, coreGui = pcall(function() return game:GetService("CoreGui") end)
+screenGui.Parent = (success and coreGui) and coreGui or localPlayer:WaitForChild("PlayerGui")
 
-local title = Instance.new("TextLabel", header)
-title.Size = UDim2.new(1, -60, 1, 0)
-title.Position = UDim2.new(0, 12, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "🐱 CC2 Farm v6.0"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 15
-title.Font = Enum.Font.GothamBold
-title.TextXAlignment = Enum.TextXAlignment.Left
+local mainFrame = Instance.new("Frame")
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Position = UDim2.new(0.5, 0, 0.4, 0)
+mainFrame.Size = UDim2.new(0, 480, 0, 300)
+mainFrame.BackgroundColor3 = Theme.MainBg
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
 
-local minBtn = Instance.new("TextButton", header)
-minBtn.Size = UDim2.new(0, 25, 0, 25)
-minBtn.Position = UDim2.new(1, -55, 0, 5)
-minBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
-minBtn.Text = "-"
-minBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minBtn.TextSize = 18
-minBtn.Font = Enum.Font.GothamBold
-minBtn.BorderSizePixel = 0
-Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 12)
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 8)
+mainCorner.Parent = mainFrame
 
-local closeBtn = Instance.new("TextButton", header)
-closeBtn.Size = UDim2.new(0, 25, 0, 25)
-closeBtn.Position = UDim2.new(1, -28, 0, 5)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextSize = 14
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.BorderSizePixel = 0
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 12)
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Thickness = 1
+mainStroke.Color = Theme.StrokeDefault
+mainStroke.Parent = mainFrame
 
--- Кот
-local catBtn = Instance.new("ImageButton")
-catBtn.Name = "CatBtn"
-catBtn.Size = UDim2.new(0, 50, 0, 50)
-catBtn.Position = UDim2.new(0.03, 0, 0.15, 0)
-catBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-catBtn.Image = "rbxassetid://18314115147"
-catBtn.ScaleType = Enum.ScaleType.Fit
-catBtn.ZIndex = 100
-catBtn.Visible = false
-catBtn.Active = true
-catBtn.Draggable = true
-catBtn.Parent = screen
-Instance.new("UICorner", catBtn).CornerRadius = UDim.new(1, 0)
+-- === БОКОВАЯ ПАНЕЛЬ ===
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 120, 1, 0)
+sidebar.BackgroundColor3 = Theme.InnerBg
+sidebar.BorderSizePixel = 0
+sidebar.Parent = mainFrame
 
-minBtn.MouseButton1Click:Connect(function()
-    main.Visible = false
-    catBtn.Visible = true
-end)
-catBtn.MouseButton1Click:Connect(function()
-    main.Visible = true
-    catBtn.Visible = false
-end)
-closeBtn.MouseButton1Click:Connect(function()
-    screen:Destroy()
-end)
+local sidebarStroke = Instance.new("UIStroke")
+sidebarStroke.Thickness = 1
+sidebarStroke.Color = Theme.StrokeDefault
+sidebarStroke.Parent = sidebar
 
--- Статус
-local status = Instance.new("TextLabel", main)
-status.Size = UDim2.new(1, -20, 0, 30)
-status.Position = UDim2.new(0, 10, 0, 45)
-status.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-status.Text = "Готов"
-status.TextColor3 = Color3.fromRGB(255, 255, 255)
-status.TextSize = 13
-status.Font = Enum.Font.GothamBold
-Instance.new("UICorner", status).CornerRadius = UDim.new(0, 4)
+local logoLabel = Instance.new("TextLabel")
+logoLabel.Size = UDim2.new(1, 0, 0, 40)
+logoLabel.BackgroundTransparency = 1
+logoLabel.Text = "DAMIR HUB"
+logoLabel.TextColor3 = Theme.BtnHover
+logoLabel.Font = Enum.Font.GothamBold
+logoLabel.TextSize = 14
+logoLabel.Parent = sidebar
 
-local startBtn = Instance.new("TextButton", main)
-startBtn.Size = UDim2.new(1, -20, 0, 40)
-startBtn.Position = UDim2.new(0, 10, 0, 85)
-startBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
-startBtn.Text = "▶ ЗАПУСТИТЬ"
-startBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-startBtn.TextSize = 16
-startBtn.Font = Enum.Font.GothamBold
-startBtn.BorderSizePixel = 0
-Instance.new("UICorner", startBtn).CornerRadius = UDim.new(0, 6)
+local container = Instance.new("Frame")
+container.Position = UDim2.new(0, 130, 0, 10)
+container.Size = UDim2.new(1, -140, 1, -20)
+container.BackgroundTransparency = 1
+container.Parent = mainFrame
 
-local stopBtn = Instance.new("TextButton", main)
-stopBtn.Size = UDim2.new(1, -20, 0, 40)
-stopBtn.Position = UDim2.new(0, 10, 0, 135)
-stopBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-stopBtn.Text = "■ ОСТАНОВИТЬ"
-stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-stopBtn.TextSize = 16
-stopBtn.Font = Enum.Font.GothamBold
-stopBtn.BorderSizePixel = 0
-Instance.new("UICorner", stopBtn).CornerRadius = UDim.new(0, 6)
+-- === ЛОГИКА ВКЛАДОК ===
+local tabs = {}
+local currentTab = nil
 
-local counter = Instance.new("TextLabel", main)
-counter.Size = UDim2.new(1, -20, 0, 25)
-counter.Position = UDim2.new(0, 10, 0, 185)
-counter.BackgroundTransparency = 1
-counter.Text = "Уничтожено: 0 | Ошибок: 0"
-counter.TextColor3 = Color3.fromRGB(180, 180, 180)
-counter.TextSize = 12
-counter.Font = Enum.Font.Gotham
-counter.TextXAlignment = Enum.TextXAlignment.Left
-
-local timerLabel = Instance.new("TextLabel", main)
-timerLabel.Size = UDim2.new(1, -20, 0, 20)
-timerLabel.Position = UDim2.new(0, 10, 0, 215)
-timerLabel.BackgroundTransparency = 1
-timerLabel.Text = "Время: 00:00"
-timerLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-timerLabel.TextSize = 11
-timerLabel.Font = Enum.Font.Gotham
-timerLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local debugInfo = Instance.new("TextLabel", main)
-debugInfo.Size = UDim2.new(1, -20, 0, 70)
-debugInfo.Position = UDim2.new(0, 10, 0, 240)
-debugInfo.BackgroundTransparency = 1
-debugInfo.Text = ""
-debugInfo.TextColor3 = Color3.fromRGB(255, 200, 100)
-debugInfo.TextSize = 10
-debugInfo.Font = Enum.Font.Gotham
-debugInfo.TextWrapped = true
-
--- ==================== СКАНЕР КРАШЕРОВ ====================
-local function getAvailableCrushers()
-    local crushers = {}
-    -- Ищем все детали с ProximityPrompt (кнопка активации крашера)
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") and obj.Enabled then
-            local parent = obj.Parent
-            if parent and parent:IsA("BasePart") then
-                -- Ищем родительскую модель (зона крашера)
-                local model = parent.Parent
-                if model and model:IsA("Model") then
-                    -- Проверяем, не занят ли крашер другой машиной (простая проверка: нет ли рядом машин)
-                    local occupied = false
-                    for _, v in pairs(workspace.Vehicles:GetChildren()) do
-                        if v:IsA("Model") and v.PrimaryPart then
-                            if (v.PrimaryPart.Position - parent.Position).Magnitude < 15 then
-                                occupied = true
-                                break
-                            end
-                        end
-                    end
-                    if not occupied then
-                        table.insert(crushers, {
-                            prompt = obj,
-                            part = parent,
-                            model = model,
-                            position = parent.Position
-                        })
-                    end
-                end
-            end
-        end
-    end
-    -- Если не нашли ProximityPrompt, ищем по имени детали "Button" или "Activate"
-    if #crushers == 0 then
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("BasePart") and (obj.Name:lower():find("button") or obj.Name:lower():find("activate")) then
-                local model = obj.Parent
-                if model and model:IsA("Model") then
-                    table.insert(crushers, {
-                        prompt = nil,
-                        part = obj,
-                        model = model,
-                        position = obj.Position
-                    })
-                end
-            end
-        end
-    end
-    return crushers
-end
-
--- ==================== СКАНЕР ДОСТУПНЫХ МАШИН ====================
-local function findAvailableVehicleGUI()
-    -- Ищем GUI спавна машин (обычно ScreenGui с кнопками)
-    for _, gui in pairs(playerGui:GetChildren()) do
-        if gui:IsA("ScreenGui") and gui.Name:lower():find("spawn") or gui.Name:lower():find("vehicle") then
-            for _, obj in pairs(gui:GetDescendants()) do
-                if obj:IsA("TextButton") or obj:IsA("ImageButton") then
-                    -- Проверяем, не заблокирована ли кнопка (по цвету, тексту, наличию замка)
-                    local text = obj:IsA("TextButton") and obj.Text or ""
-                    local parent = obj.Parent
-                    local locked = false
-                    -- Проверка на VIP/Gamepass (часто серый цвет или иконка)
-                    if obj.BackgroundColor3 and obj.BackgroundColor3.r < 0.5 and obj.BackgroundColor3.g < 0.5 and obj.BackgroundColor3.b < 0.5 then
-                        locked = true
-                    end
-                    if text:lower():find("vip") or text:lower():find("gamepass") or text:lower():find("pass") then
-                        locked = true
-                    end
-                    -- Ищем замок по детям
-                    for _, child in pairs(obj:GetChildren()) do
-                        if child:IsA("ImageLabel") and child.Image:lower():find("lock") then
-                            locked = true
-                            break
-                        end
-                    end
-                    if not locked and obj.Visible and obj.Active then
-                        return obj -- первая доступная кнопка
-                    end
-                end
-            end
-        end
-    end
-    -- Запасной вариант: ищем кнопку "Spawn" в любом GUI
-    for _, gui in pairs(playerGui:GetChildren()) do
-        if gui:IsA("ScreenGui") then
-            for _, obj in pairs(gui:GetDescendants()) do
-                if (obj:IsA("TextButton") or obj:IsA("ImageButton")) and obj.Active and obj.Visible then
-                    local text = obj:IsA("TextButton") and obj.Text or ""
-                    if text:lower():find("spawn") or text:lower():find("car") then
-                        return obj
-                    end
-                end
-            end
-        end
-    end
-    return nil
-end
-
--- ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
-local function getCurrentVehicle()
-    local char = player.Character
-    if not char then return nil end
-    local torso = char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart")
-    if not torso then return nil end
-    -- Ищем модель, в которой находится Torso
-    for _, model in pairs(workspace:GetDescendants()) do
-        if model:IsA("Model") and model.PrimaryPart and torso:IsDescendantOf(model) then
-            return model
-        end
-    end
-    -- Ближайшая модель с VehicleSeat
-    local nearest, minDist = nil, 20
-    for _, model in pairs(workspace:GetDescendants()) do
-        if model:IsA("Model") and model:FindFirstChildWhichIsA("VehicleSeat") then
-            local dist = (model.PrimaryPart.Position - torso.Position).Magnitude
-            if dist < minDist then
-                minDist = dist
-                nearest = model
-            end
-        end
-    end
-    return nearest
-end
-
-local function clickButton(button)
-    if not button then return end
-    -- Симулируем клик
-    if button:IsA("TextButton") or button:IsA("ImageButton") then
-        pcall(function()
-            button:Invoke() -- для некоторых GUI
-        end)
-        pcall(function()
-            -- Эмуляция нажатия мыши
-            local mouse = player:GetMouse()
-            local pos = button.AbsolutePosition + button.AbsoluteSize / 2
-            mouse.X, mouse.Y = pos.X, pos.Y
-            task.wait(0.05)
-            mouse1click()
-        end)
-        -- Альтернативный метод
-        firesignal(button.MouseButton1Click)
-    end
-end
-
--- ==================== ОСНОВНОЙ ЦИКЛ ====================
-local farming = false
-local crushes = 0
-local errors = 0
-local startTime = 0
-
-local function spawnVehicle()
-    local btn = findAvailableVehicleGUI()
-    if btn then
-        status.Text = "Спавн машины..."
-        clickButton(btn)
-        task.wait(3) -- ждём появления
-    else
-        status.Text = "Не нашёл кнопку спавна!"
-        task.wait(5)
-    end
-end
-
-local function activateCrusher(crusher)
-    if crusher.prompt then
-        pcall(function()
-            crusher.prompt:InputHoldBegin()
-            task.wait(1)
-            crusher.prompt:InputHoldEnd()
-        end)
-    elseif crusher.part then
-        -- Ищем ClickDetector
-        local cd = crusher.part:FindFirstChildOfClass("ClickDetector")
-        if cd then
-            pcall(function()
-                cd:Click()
-            end)
-        end
-    end
-end
-
-local function moveToCrusher(vehicle, crusher)
-    local root = vehicle.PrimaryPart or vehicle:FindFirstChildWhichIsA("BasePart")
-    if not root then return false end
-    -- Плавная телепортация над крашером
-    local targetPos = crusher.position + Vector3.new(0, 8, 0)
-    root.CFrame = CFrame.new(targetPos)
-    root.Velocity = Vector3.new(0, -5, 0)
-    task.wait(2)
-    return true
-end
-
-startBtn.MouseButton1Click:Connect(function()
-    if farming then return end
-    farming = true
-    crushes = 0
-    errors = 0
-    startTime = tick()
-    startBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    status.Text = "Запуск..."
-    status.BackgroundColor3 = Color3.fromRGB(0, 130, 50)
-
-    spawn(function()
-        while farming do
-            local ok = pcall(function()
-                -- 1. Получить список доступных крашеров
-                local crushers = getAvailableCrushers()
-                if #crushers == 0 then
-                    status.Text = "Нет доступных крашеров"
-                    debugInfo.Text = "Жду крашер..."
-                    task.wait(5)
-                    return
-                end
-
-                -- 2. Выбрать крашер (первый свободный)
-                local targetCrusher = crushers[1]
-                debugInfo.Text = "Крашеров: " .. #crushers .. "\nВыбран: " .. targetCrusher.model.Name
-
-                -- 3. Получить или заспавнить машину
-                local vehicle = getCurrentVehicle()
-                if not vehicle then
-                    status.Text = "Нет машины, спавню..."
-                    spawnVehicle()
-                    task.wait(3)
-                    vehicle = getCurrentVehicle()
-                    if not vehicle then
-                        errors = errors + 1
-                        status.Text = "Не удалось заспавнить!"
-                        return
-                    end
-                end
-
-                -- 4. Переместить машину в крашер
-                status.Text = "Еду к крашеру..."
-                moveToCrusher(vehicle, targetCrusher)
-
-                -- 5. Активировать крашер
-                status.Text = "Активация крашера..."
-                activateCrusher(targetCrusher)
-
-                -- 6. Ожидание уничтожения
-                local waited = 0
-                while waited < 15 and vehicle.Parent do
-                    task.wait(1)
-                    waited = waited + 1
-                    status.Text = "Краш... " .. waited .. "/15с"
-                end
-
-                if not vehicle.Parent then
-                    crushes = crushes + 1
-                    status.Text = "Успех! +1"
-                    status.BackgroundColor3 = Color3.fromRGB(0, 160, 60)
-                else
-                    -- Если не уничтожена, пробуем респавн
-                    status.Text = "Не уничтожена, респавн..."
-                    -- Удаляем машину (если возможно) или ждём
-                    pcall(function() vehicle:Destroy() end)
-                    task.wait(2)
-                    errors = errors + 1
-                    status.BackgroundColor3 = Color3.fromRGB(180, 100, 0)
-                end
-
-                counter.Text = "Уничтожено: " .. crushes .. " | Ошибок: " .. errors
-                local t = tick() - startTime
-                timerLabel.Text = string.format("Время: %02d:%02d", math.floor(t/60), math.floor(t%60))
-                task.wait(2)
-            end)
-            if not ok then
-                errors = errors + 1
-                status.Text = "Ошибка цикла"
-                task.wait(3)
-            end
-        end
+local function createTab(name)
+    local tabFrame = Instance.new("ScrollingFrame")
+    tabFrame.Size = UDim2.new(1, 0, 1, 0)
+    tabFrame.BackgroundTransparency = 1
+    tabFrame.CanvasSize = UDim2.new(0, 0, 1.5, 0)
+    tabFrame.ScrollBarThickness = 2
+    tabFrame.Visible = false
+    tabFrame.Parent = container
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Padding = UDim.new(0, 8)
+    listLayout.Parent = tabFrame
+    
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Size = UDim2.new(0, 100, 0, 30)
+    tabBtn.Position = UDim2.new(0, 10, 0, 45 + (#container:GetChildren() * 35))
+    tabBtn.BackgroundColor3 = Theme.BtnBg
+    tabBtn.Text = name
+    tabBtn.TextColor3 = Theme.TextMain
+    tabBtn.Font = Enum.Font.GothamBold
+    tabBtn.TextSize = 11
+    tabBtn.Parent = sidebar
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    btnCorner.Parent = tabBtn
+    
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, t in pairs(tabs) do t.Visible = false end
+        tabFrame.Visible = true
     end)
-end)
+    
+    tabs[name] = tabFrame
+    return tabFrame
+end
 
-stopBtn.MouseButton1Click:Connect(function()
-    farming = false
-    status.Text = "Остановлен"
-    status.BackgroundColor3 = Color3.fromRGB(120, 30, 30)
-    startBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
-end)
+local farmTab = createTab("🚀 Авто Фарм")
+local funTab = createTab("🤡 Fun Zone")
+tabs["🚀 Авто Фарм"].Visible = true
 
--- Анти-АФК
-spawn(function()
-    while task.wait(20) do
+-- === РАЗДЕЛ 1: АВТО ФАРМ И ИНФО О МАШИНЕ ===
+local farmTitle = Instance.new("TextLabel")
+farmTitle.Size = UDim2.new(1, 0, 0, 20)
+farmTitle.BackgroundTransparency = 1
+farmTitle.Text = "ПРОГРАММА «МОЛОТ» (БЕСКОНЕЧНАЯ)"
+farmTitle.TextColor3 = Theme.TextMain
+farmTitle.Font = Enum.Font.GothamBold
+farmTitle.TextSize = 12
+farmTitle.TextXAlignment = Enum.TextXAlignment.Left
+farmTitle.Parent = farmTab
+
+-- ПАНЕЛЬ ОПРЕДЕЛЕНИЯ МАШИНЫ
+local carInfoFrame = Instance.new("Frame")
+carInfoFrame.Size = UDim2.new(1, 0, 0, 35)
+carInfoFrame.BackgroundColor3 = Theme.InnerBg
+carInfoFrame.Parent = farmTab
+
+local carInfoCorner = Instance.new("UICorner")
+carInfoCorner.CornerRadius = UDim.new(0, 6)
+carInfoCorner.Parent = carInfoFrame
+
+local carInfoStroke = Instance.new("UIStroke")
+carInfoStroke.Thickness = 1
+carInfoStroke.Color = Theme.StrokeDefault
+carInfoStroke.Parent = carInfoFrame
+
+local currentCarLabel = Instance.new("TextLabel")
+currentCarLabel.Size = UDim2.new(1, -20, 1, 0)
+currentCarLabel.Position = UDim2.new(0, 10, 0, 0)
+currentCarLabel.BackgroundTransparency = 1
+currentCarLabel.Text = "🚗 Сканирование авто..."
+currentCarLabel.TextColor3 = Theme.TextSub
+currentCarLabel.Font = Enum.Font.GothamBold
+currentCarLabel.TextSize = 11
+currentCarLabel.TextXAlignment = Enum.TextXAlignment.Left
+currentCarLabel.Parent = carInfoFrame
+
+task.spawn(function()
+    while task.wait(0.5) do
         pcall(function()
-            local c = player.Character
-            if c then
-                local h = c:FindFirstChildOfClass("Humanoid")
-                if h then h:Move(Vector3.zero, true) end
+            local foundCar = nil
+            local carName = nil
+            
+            for _, v in pairs(workspace.Vehicles:GetChildren()) do
+                if v:FindFirstChild("Owner") and v.Owner.Value == localPlayer then
+                    foundCar = v
+                    carName = v.Name
+                    break
+                end
+            end
+            
+            if foundCar and carName then
+                currentCarLabel.Text = "🚗 Текущее авто: " .. tostring(carName)
+                currentCarLabel.TextColor3 = Theme.AccentGlow
+            else
+                currentCarLabel.Text = "🚗 Авто: Нет на карте"
+                currentCarLabel.TextColor3 = Theme.StatusOffline
             end
         end)
     end
 end)
 
--- Первичный вывод
-local crushers = getAvailableCrushers()
-local vehicle = getCurrentVehicle()
-print("CC2 v6.0: крашеров - " .. #crushers)
-debugInfo.Text = "Крашеров: " .. #crushers .. "\nМашина: " .. (vehicle and vehicle.Name or "нет")
+-- ОПИСАНИЕ И КНОПКА МОЛОТА
+local farmDesc = Instance.new("TextLabel")
+farmDesc.Size = UDim2.new(1, 0, 0, 30)
+farmDesc.BackgroundTransparency = 1
+farmDesc.Text = "Автоматически подкидывает, разбивает и респавнит твою машину по кругу."
+farmDesc.TextColor3 = Theme.TextSub
+farmDesc.Font = Enum.Font.Gotham
+farmDesc.TextSize = 10
+farmDesc.TextWrapped = true
+farmDesc.TextXAlignment = Enum.TextXAlignment.Left
+farmDesc.Parent = farmTab
+
+local hammerActive = false
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(1, 0, 0, 40)
+toggleBtn.BackgroundColor3 = Theme.BtnBg
+toggleBtn.Text = "ВКЛЮЧИТЬ МОЛОТ"
+toggleBtn.TextColor3 = Theme.StatusOffline
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 12
+toggleBtn.Parent = farmTab
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 6)
+toggleCorner.Parent = toggleBtn
+
+local toggleStroke = Instance.new("UIStroke")
+toggleStroke.Thickness = 1
+toggleStroke.Color = Theme.StrokeDefault
+toggleStroke.Parent = toggleBtn
+
+-- === ОБНОВЛЕННАЯ ЛОГИКА ФАРМА С АВТОРЕСПАВНОМ ===
+local function runHammer()
+    while hammerActive do
+        pcall(function()
+            local car = nil
+            -- 1. Ищем машину
+            for _, v in pairs(workspace.Vehicles:GetChildren()) do
+                if v:FindFirstChild("Owner") and v.Owner.Value == localPlayer then
+                    car = v
+                    break
+                end
+            end
+            
+            if car and car:FindFirstChild("PrimaryPart") then
+                local root = car.PrimaryPart
+                -- 2. Подкидываем и бьем
+                root.CFrame = CFrame.new(root.Position.X, 650, root.Position.Z)
+                task.wait(0.15)
+                root.AssemblyLinearVelocity = Vector3.new(0, -6000, 0)
+                
+                -- 3. Ждем, пока машина разобьется и начислятся деньги
+                task.wait(1.5) 
+                
+                -- 4. АВТОРЕСПАВН (Бот сам жмет кнопку респавна текущей машины)
+                game:GetService("ReplicatedStorage").NetworkRemote.SpawnVehicle:InvokeServer()
+                task.wait(1) -- Ждем пока машина появится
+            else
+                -- Если машины вообще нет, просто спавним её
+                game:GetService("ReplicatedStorage").NetworkRemote.SpawnVehicle:InvokeServer()
+                task.wait(1.5)
+            end
+        end)
+        task.wait(0.1) -- Небольшая пауза, чтобы не перегружать сервер
+    end
+end
+
+toggleBtn.MouseButton1Click:Connect(function()
+    hammerActive = not hammerActive
+    if hammerActive then
+        toggleBtn.Text = "МОЛОТ РАБОТАЕТ (АВТО)"
+        toggleBtn.TextColor3 = Theme.StatusOnline
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 35, 30)
+        task.spawn(runHammer)
+    else
+        toggleBtn.Text = "ВКЛЮЧИТЬ МОЛОТ"
+        toggleBtn.TextColor3 = Theme.StatusOffline
+        toggleBtn.BackgroundColor3 = Theme.BtnBg
+    end
+end)
+
+-- === РАЗДЕЛ 2: FUN ZONE (МЕМЫ И ОТСЫЛКИ) ===
+local funTitle = Instance.new("TextLabel")
+funTitle.Size = UDim2.new(1, 0, 0, 20)
+funTitle.BackgroundTransparency = 1
+funTitle.Text = "МЕМ ГЕНЕРАТОР"
+funTitle.TextColor3 = Theme.TextMain
+funTitle.Font = Enum.Font.GothamBold
+funTitle.TextSize = 12
+funTitle.TextXAlignment = Enum.TextXAlignment.Left
+funTitle.Parent = funTab
+
+local memeImage = Instance.new("ImageLabel")
+memeImage.Size = UDim2.new(0, 140, 0, 140)
+memeImage.BackgroundColor3 = Theme.InnerBg
+memeImage.Image = MemeIds[1]
+memeImage.Parent = funTab
+
+local memeCorner = Instance.new("UICorner")
+memeCorner.CornerRadius = UDim.new(0, 6)
+memeCorner.Parent = memeImage
+
+local nextMemeBtn = Instance.new("TextButton")
+nextMemeBtn.Size = UDim2.new(1, 0, 0, 35)
+nextMemeBtn.BackgroundColor3 = Theme.BtnBg
+nextMemeBtn.Text = "НЕ СМЕШНО, ДАВАЙ СЛЕДУЮЩИЙ"
+nextMemeBtn.TextColor3 = Theme.TextMain
+nextMemeBtn.Font = Enum.Font.GothamBold
+nextMemeBtn.TextSize = 11
+nextMemeBtn.Parent = funTab
+
+local nextCorner = Instance.new("UICorner")
+nextCorner.CornerRadius = UDim.new(0, 6)
+nextCorner.Parent = nextMemeBtn
+
+nextMemeBtn.MouseButton1Click:Connect(function()
+    local randomMeme = MemeIds[math.random(1, #MemeIds)]
+    memeImage.Image = randomMeme
+end)
+
+local secretBtn = Instance.new("TextButton")
+secretBtn.Size = UDim2.new(1, 0, 0, 30)
+secretBtn.BackgroundColor3 = Color3.fromRGB(40, 20, 25)
+secretBtn.Text = "⚠️ СЕКРЕТНАЯ КНОПКА ДАМИРА"
+secretBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+secretBtn.Font = Enum.Font.GothamBold
+secretBtn.TextSize = 10
+secretBtn.Parent = funTab
+
+local secretCorner = Instance.new("UICorner")
+secretCorner.CornerRadius = UDim.new(0, 6)
+secretCorner.Parent = secretBtn
+
+secretBtn.MouseButton1Click:Connect(function()
+    secretBtn.Text = "Скрипт заряжен на 1000000$!"
+    task.wait(1.5)
+    secretBtn.Text = "⚠️ СЕКРЕТНАЯ КНОПКА ДАМИРА"
+end)
+
