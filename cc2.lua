@@ -1,10 +1,11 @@
--- CC2 AUTOFARM v5.0 - Рабочий сканер машин
+-- CC2 AUTOFARM v5.1 - Универсальный поиск машин
+-- Для Delta Executor
 -- GitHub: github.com/Vodi509/DAMIR_DRUN67_SCRIPT
 
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Очистка
+-- Очистка старого GUI
 for _, v in pairs(playerGui:GetChildren()) do
     if v.Name == "CC2_Farm" then v:Destroy() end
 end
@@ -16,8 +17,8 @@ screen.ResetOnSpawn = false
 screen.Parent = playerGui
 
 local main = Instance.new("Frame", screen)
-main.Size = UDim2.new(0, 300, 0, 280)
-main.Position = UDim2.new(0.5, -150, 0.3, 0)
+main.Size = UDim2.new(0, 320, 0, 290)
+main.Position = UDim2.new(0.5, -160, 0.3, 0)
 main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 main.BorderSizePixel = 0
 main.Active = true
@@ -34,7 +35,7 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1, -60, 1, 0)
 title.Position = UDim2.new(0, 12, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🐱 CC2 Farm v5.0"
+title.Text = "🐱 CC2 Farm v5.1"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.TextSize = 15
 title.Font = Enum.Font.GothamBold
@@ -142,36 +143,84 @@ timerLabel.TextSize = 11
 timerLabel.Font = Enum.Font.Gotham
 timerLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Отладочная инфа
+-- Отладка
 local debugInfo = Instance.new("TextLabel", main)
-debugInfo.Size = UDim2.new(1, -20, 0, 30)
+debugInfo.Size = UDim2.new(1, -20, 0, 45)
 debugInfo.Position = UDim2.new(0, 10, 0, 240)
 debugInfo.BackgroundTransparency = 1
 debugInfo.Text = ""
 debugInfo.TextColor3 = Color3.fromRGB(255, 200, 100)
 debugInfo.TextSize = 10
 debugInfo.Font = Enum.Font.Gotham
-debugInfo.TextXAlignment = Enum.TextXAlignment.Left
+debugInfo.TextWrapped = true
 
--- ==================== СКАНЕР ====================
-local function scanAllVehicles()
-    local folder = workspace:FindFirstChild("Vehicles")
-    if not folder then return {} end
-    
-    local all = {}
-    for _, v in pairs(folder:GetChildren()) do
-        if v:IsA("Model") and (v:FindFirstChildWhichIsA("VehicleSeat") or v:FindFirstChild("Owner")) then
-            local owner = v:FindFirstChild("Owner")
-            local ownerName = owner and owner.Value and owner.Value.Name or "???"
-            table.insert(all, {
-                model = v,
-                ownerName = ownerName,
-                name = v.Name,
-                seat = v:FindFirstChildWhichIsA("VehicleSeat")
-            })
+-- ==================== НОВЫЙ СКАНЕР МАШИН ====================
+local function findMyVehicle()
+    local char = player.Character
+    if not char then return nil end
+
+    -- 1) Проверяем, в какой модели находится Torso (по расположению)
+    local torso = char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart")
+    if not torso then return nil end
+
+    -- Ищем все модели в workspace, у которых есть PrimaryPart
+    for _, model in pairs(workspace:GetDescendants()) do
+        if model:IsA("Model") and model.PrimaryPart then
+            -- Если Torso внутри этой модели (например, игрок в машине)
+            if torso:IsDescendantOf(model) then
+                return model
+            end
         end
     end
-    return all
+
+    -- 2) Ищем машину по расстоянию до PrimaryPart (ближайшая модель с VehicleSeat)
+    local function hasVehicleParts(m)
+        return m:FindFirstChildWhichIsA("VehicleSeat") ~= nil
+            or m:FindFirstChild("Engine") ~= nil
+            or m.Name:lower():find("car") or m.Name:lower():find("vehicle")
+    end
+
+    local nearest, minDist = nil, 20
+    for _, model in pairs(workspace:GetDescendants()) do
+        if model:IsA("Model") and model.PrimaryPart and hasVehicleParts(model) then
+            local dist = (model.PrimaryPart.Position - torso.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                nearest = model
+            end
+        end
+    end
+
+    -- 3) Если не нашли, берём любую модель с VehicleSeat
+    if not nearest then
+        for _, model in pairs(workspace:GetDescendants()) do
+            if model:IsA("Model") and model:FindFirstChildWhichIsA("VehicleSeat") then
+                nearest = model
+                break
+            end
+        end
+    end
+
+    return nearest
+end
+
+local function findAllVehicles()
+    local list = {}
+    for _, model in pairs(workspace:GetDescendants()) do
+        if model:IsA("Model") and model.PrimaryPart then
+            local seat = model:FindFirstChildWhichIsA("VehicleSeat")
+            local owner = model:FindFirstChild("Owner")
+            if seat or owner or model.Name:lower():find("car") or model.Name:lower():find("truck") then
+                table.insert(list, {
+                    model = model,
+                    name = model.Name,
+                    seat = seat,
+                    owner = owner and owner.Value and owner.Value.Name or "нет"
+                })
+            end
+        end
+    end
+    return list
 end
 
 local function findCrusher()
@@ -186,7 +235,6 @@ local function findCrusher()
             end
         end
     end
-    -- если не нашли, возьмём самую большую платформу с "Base" или "Floor" рядом со спавном
     if not best then
         for _, v in pairs(workspace:GetDescendants()) do
             if v:IsA("BasePart") and (v.Name:lower():find("base") or v.Name:lower():find("floor")) then
@@ -199,16 +247,7 @@ local function findCrusher()
     return best
 end
 
-local function findCrushEvent()
-    for _, v in pairs(game.ReplicatedStorage:GetDescendants()) do
-        if v:IsA("RemoteEvent") and v.Name:lower():find("crush") then
-            return v
-        end
-    end
-    return nil
-end
-
--- ==================== ЛОГИКА ====================
+-- ==================== ФАРМ ====================
 local farming = false
 local crushes = 0
 local errors = 0
@@ -216,32 +255,38 @@ local startTime = 0
 
 startBtn.MouseButton1Click:Connect(function()
     if farming then return end
-    
-    -- Сканируем
-    local vehicles = scanAllVehicles()
+
     local crusher = findCrusher()
-    local crushEvent = findCrushEvent()
-    
-    -- Вывод отладки
-    local msg = "Машин: " .. #vehicles .. " | Крашер: " .. (crusher and crusher.Name or "НЕТ")
-    debugInfo.Text = msg
-    print("[CC2] " .. msg)
-    for i, v in ipairs(vehicles) do
-        print("[CC2] Машина " .. i .. ": " .. v.name .. " | Владелец: " .. v.ownerName)
+    local vehicle = findMyVehicle()
+    local allVehicles = findAllVehicles()
+
+    -- Отладка
+    print("=== CC2 DEBUG ===")
+    print("Крашер:", crusher and crusher.Name or "НЕТ")
+    print("Моя машина:", vehicle and vehicle.Name or "НЕТ")
+    print("Всего машин в мире:", #allVehicles)
+    for i, v in ipairs(allVehicles) do
+        print(i, v.name, "| владелец:", v.owner, "| сиденье:", v.seat ~= nil)
     end
-    
+    print("=================")
+
+    local dbgText = "Крашер: " .. (crusher and crusher.Name or "❌") 
+        .. "\nМашин в мире: " .. #allVehicles
+        .. "\nМоя машина: " .. (vehicle and vehicle.Name or "❌")
+    debugInfo.Text = dbgText
+
     if not crusher then
-        status.Text = "Крашер не найден!"
+        status.Text = "Ошибка: крашер не найден"
         status.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
         return
     end
-    
-    if #vehicles == 0 then
-        status.Text = "Машин нет! Сядь в машину."
+
+    if not vehicle then
+        status.Text = "Не могу найти машину!"
         status.BackgroundColor3 = Color3.fromRGB(180, 100, 0)
         return
     end
-    
+
     farming = true
     crushes = 0
     errors = 0
@@ -249,66 +294,45 @@ startBtn.MouseButton1Click:Connect(function()
     startBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     status.Text = "Фарм запущен"
     status.BackgroundColor3 = Color3.fromRGB(0, 130, 50)
-    
+
     spawn(function()
         while farming do
             local ok = pcall(function()
                 local char = player.Character
-                if not char or not char:FindFirstChild("HumanoidRootPart") then
-                    status.Text = "Жду респавн..."
-                    task.wait(3)
+                if not char then return end
+
+                -- Обновляем машину (вдруг уничтожилась)
+                local targetCar = findMyVehicle()
+                if not targetCar then
+                    -- Если машина пропала, ждём спавна новой
+                    status.Text = "Нет машины, жду..."
+                    task.wait(5)
                     return
                 end
-                
-                -- Выбираем машину: сначала ту в которой сидим, потом свою, потом любую
-                local targetCar = nil
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if hum and hum.SeatPart then
-                    -- игрок в машине, берём её
-                    targetCar = hum.SeatPart.Parent
-                    status.Text = "Машина: " .. targetCar.Name .. " (сидим)"
-                else
-                    -- ищем свои (с Owner = player)
-                    for _, v in ipairs(vehicles) do
-                        if v.ownerName == player.Name then
-                            targetCar = v.model
-                            break
-                        end
-                    end
-                    if not targetCar then
-                        -- берём первую попавшуюся
-                        targetCar = vehicles[1].model
-                        status.Text = "Машина: " .. targetCar.Name .. " (общая)"
-                    end
-                end
-                
+
                 local root = targetCar.PrimaryPart or targetCar:FindFirstChildWhichIsA("BasePart")
                 if not root then return end
-                
-                -- Телепорт в крашер
+
+                status.Text = "Телепорт: " .. targetCar.Name
                 root.CFrame = CFrame.new(crusher.Position + Vector3.new(0, 12, 0))
                 root.Velocity = Vector3.new(0, -15, 0)
                 task.wait(2)
-                
-                -- Активация
-                if crushEvent then
-                    pcall(function() crushEvent:FireServer(targetCar) end)
-                    pcall(function() crushEvent:FireServer("Crush", targetCar) end)
-                end
-                -- пробуем все ивенты
-                for _, v in pairs(game.ReplicatedStorage:GetDescendants()) do
-                    if v:IsA("RemoteEvent") then
-                        pcall(function() v:FireServer(targetCar) end)
+
+                status.Text = "Активация краша..."
+                for _, ev in pairs(game.ReplicatedStorage:GetDescendants()) do
+                    if ev:IsA("RemoteEvent") then
+                        pcall(function() ev:FireServer(targetCar) end)
+                        pcall(function() ev:FireServer("Crush", targetCar) end)
                     end
                 end
-                
+
                 local waited = 0
                 while waited < 15 and targetCar.Parent do
                     task.wait(1)
                     waited = waited + 1
                     status.Text = "Краш... " .. waited .. "/15с"
                 end
-                
+
                 if not targetCar.Parent then
                     crushes = crushes + 1
                     status.Text = "Успех! +1"
@@ -318,15 +342,11 @@ startBtn.MouseButton1Click:Connect(function()
                     status.Text = "Таймаут"
                     status.BackgroundColor3 = Color3.fromRGB(180, 100, 0)
                 end
-                
+
                 counter.Text = "Уничтожено: " .. crushes .. " | Ошибок: " .. errors
                 local t = tick() - startTime
                 timerLabel.Text = string.format("Время: %02d:%02d", math.floor(t/60), math.floor(t%60))
-                
-                -- обновим список машин (могла появиться новая)
-                vehicles = scanAllVehicles()
-                debugInfo.Text = "Машин: " .. #vehicles .. " | Крашер: " .. crusher.Name
-                
+                debugInfo.Text = "Машин в мире: " .. #findAllVehicles() .. "\nТекущая: " .. (targetCar and targetCar.Name or "?")
                 task.wait(2)
             end)
             if not ok then task.wait(3) end
@@ -355,8 +375,8 @@ spawn(function()
 end)
 
 -- Первичный вывод
-local v = scanAllVehicles()
-local c = findCrusher()
-print("[CC2] Машин найдено: " .. #v)
-print("[CC2] Крашер: " .. (c and c.Name or "нет"))
-debugInfo.Text = "Машин: " .. #v .. " | Крашер: " .. (c and c.Name or "нет")
+local crusher = findCrusher()
+local vehicle = findMyVehicle()
+local all = findAllVehicles()
+print("CC2 v5.1: крашер -", crusher and crusher.Name, "машин -", #all)
+debugInfo.Text = "Крашер: " .. (crusher and crusher.Name or "❌") .. "\nМашин в мире: " .. #all .. "\nТы в: " .. (vehicle and vehicle.Name or "❌")
