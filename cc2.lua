@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.21 - SPAWN CLICK 30/35 ]] --
+-- [[ DAMIR_DRUN67 HUB v5.22 - SPAWN CLICK 65/35 ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -40,8 +40,8 @@ local function getMyCar()
     return nil
 end
 
--- Смещение: 30 вправо, 35 вниз
-local AUTO_OFFSET_X = 30
+-- Смещение: 65 вправо, 35 вниз
+local AUTO_OFFSET_X = 65
 local AUTO_OFFSET_Y = 35
 
 local function clickButton(btn)
@@ -157,7 +157,7 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1, -50, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "DAMIR HUB v5.21"
+title.Text = "DAMIR HUB v5.22"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
