@@ -1,3 +1,5 @@
+-- [[ DAMIR_DRUN67 HUB v4.24 - FINAL STABLE ]] --
+
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "Hub"
@@ -13,6 +15,7 @@ cat.ScaleType = Enum.ScaleType.Fit
 cat.ZIndex = 999
 cat.Visible = false
 Instance.new("UICorner", cat).CornerRadius = UDim.new(1,0)
+Instance.new("UIStroke", cat).Color = Color3.fromRGB(160,100,255)
 
 -- Окно
 local win = Instance.new("Frame", gui)
@@ -24,6 +27,7 @@ win.Active = true
 win.Draggable = true
 win.ZIndex = 100
 Instance.new("UICorner", win).CornerRadius = UDim.new(0,8)
+Instance.new("UIStroke", win).Color = Color3.fromRGB(40,40,55)
 
 -- Заголовок
 local hdr = Instance.new("Frame", win)
@@ -36,7 +40,7 @@ local ttl = Instance.new("TextLabel", hdr)
 ttl.Size = UDim2.new(1,-50,1,0)
 ttl.Position = UDim2.new(0,12,0,0)
 ttl.BackgroundTransparency = 1
-ttl.Text = "DAMIR HUB"
+ttl.Text = "DAMIR HUB v4.24"
 ttl.TextColor3 = Color3.new(1,1,1)
 ttl.Font = Enum.Font.GothamBold
 ttl.TextSize = 14
@@ -67,7 +71,7 @@ local st = Instance.new("TextLabel", win)
 st.Size = UDim2.new(1,-24,0,28)
 st.Position = UDim2.new(0,12,0,45)
 st.BackgroundColor3 = Color3.fromRGB(25,25,35)
-st.Text = "Готов"
+st.Text = "Ready"
 st.TextColor3 = Color3.new(1,1,1)
 st.Font = Enum.Font.GothamBold
 st.TextSize = 12
@@ -104,15 +108,16 @@ local cnt = Instance.new("TextLabel", win)
 cnt.Size = UDim2.new(1,-24,0,18)
 cnt.Position = UDim2.new(0,12,0,179)
 cnt.BackgroundTransparency = 1
-cnt.Text = "Hits: 0"
+cnt.Text = "Hits: 0 | Broken: 0"
 cnt.TextColor3 = Color3.fromRGB(160,160,180)
 cnt.Font = Enum.Font.Gotham
 cnt.TextSize = 11
 cnt.TextXAlignment = Enum.TextXAlignment.Left
 
 local hits = 0
+local broken = 0
 
--- Функции
+-- ==================== ФУНКЦИИ ====================
 local function getCar()
     local c = player.Character
     if not c then return nil end
@@ -138,7 +143,10 @@ local function smash()
     task.wait(0.1)
     r.Velocity = Vector3.new(0, -500, 0)
     task.wait(0.9)
-    if not car.Parent then return true end
+    if not car.Parent then
+        broken = broken + 1
+        return true
+    end
     return false
 end
 
@@ -174,7 +182,7 @@ local function spawnCar()
     return false
 end
 
--- Молот
+-- ==================== КНОПКИ ====================
 hmr.MouseButton1Click:Connect(function()
     active = not active
     if active then
@@ -189,8 +197,8 @@ hmr.MouseButton1Click:Connect(function()
             while active do
                 smash()
                 hits = hits + 1
-                cnt.Text = "Hits: " .. hits
-                st.Text = getCar() and "Molot..." or "No car"
+                cnt.Text = "Hits: " .. hits .. " | Broken: " .. broken
+                st.Text = getCar() and "Smashing..." or "No car"
                 task.wait(0.3)
             end
         end)
@@ -201,7 +209,6 @@ hmr.MouseButton1Click:Connect(function()
     end
 end)
 
--- Автофарм
 abtn.MouseButton1Click:Connect(function()
     af = not af
     if af then
@@ -224,7 +231,7 @@ abtn.MouseButton1Click:Connect(function()
                         if not af then break end
                         local ok = smash()
                         hits = hits + 1
-                        cnt.Text = "Hits: " .. hits
+                        cnt.Text = "Hits: " .. hits .. " | Broken: " .. broken
                         if ok then
                             st.Text = "DESTROYED!"
                             task.wait(1)
