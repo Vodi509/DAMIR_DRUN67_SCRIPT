@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v5.14 - PRECISE SPAWN CLICK ]] --
+-- [[ DAMIR_DRUN67 HUB v5.15 - PERFECT SPAWN CLICK ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -40,37 +40,32 @@ local function getMyCar()
     return nil
 end
 
--- Точное смещение по твоим замерам
-local AUTO_OFFSET_X = 7    -- пикселей вправо
-local AUTO_OFFSET_Y = 11   -- пикселей вниз
+-- Точное смещение: 7 вправо, 7 вниз
+local AUTO_OFFSET_X = 7
+local AUTO_OFFSET_Y = 7
 
 local function clickButton(btn)
     if not btn then return false end
     local success = false
 
-    -- 1. firesignal
     if firesignal and btn.MouseButton1Click then
         pcall(function() firesignal(btn.MouseButton1Click) end)
         success = true
     end
-    -- 2. Fire события
     if btn.MouseButton1Click then
         pcall(function() btn.MouseButton1Click:Fire() end)
         success = true
     end
-    -- 3. RemoteEvent внутри кнопки
     for _, child in pairs(btn:GetDescendants()) do
         if child:IsA("RemoteEvent") then
             pcall(function() child:FireServer() end)
             success = true
         end
     end
-    -- 4. Invoke
     if btn:IsA("TextButton") and btn.Invoke then
         pcall(function() btn:Invoke() end)
         success = true
     end
-    -- 5. Эмуляция мыши с точным смещением
     pcall(function()
         local vim = game:GetService("VirtualInputManager")
         local pos = btn.AbsolutePosition + btn.AbsoluteSize / 2
@@ -80,7 +75,6 @@ local function clickButton(btn)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 1)
         wait(0.03)
-        -- второй клик с микро-сдвигом для надёжности
         vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, true, game, 1)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X + 1, pos.Y + 1, 0, false, game, 1)
@@ -163,7 +157,7 @@ local title = Instance.new("TextLabel", header)
 title.Size = UDim2.new(1, -50, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "DAMIR HUB v5.14"
+title.Text = "DAMIR HUB v5.15"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
