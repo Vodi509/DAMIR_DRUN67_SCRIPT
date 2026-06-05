@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v4.1 - POWER HAMMER + AUTO FARM ]] --
+-- [[ DAMIR_DRUN67 HUB v4.1 - POWER HAMMER + AUTO FARM (FIXED) ]] --
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -28,16 +28,14 @@ local MemeIds = {
     "rbxthumb://type=Asset&id=6072153923&w=150&h=150"
 }
 
--- ==================== ПОИСК МАШИНЫ (ИСПРАВЛЕН) ====================
+-- ==================== ПОИСК МАШИНЫ ====================
 local function getMyCar()
     local char = localPlayer.Character
     if not char then return nil end
     
-    -- Способ 1: игрок сидит в сиденье
     local humanoid = char:FindFirstChildOfClass("Humanoid")
     if humanoid and humanoid.SeatPart then
         local seat = humanoid.SeatPart
-        -- Идём вверх по иерархии пока не найдём Model
         local current = seat
         while current do
             if current:IsA("Model") and current ~= char then
@@ -47,13 +45,11 @@ local function getMyCar()
         end
     end
     
-    -- Способ 2: Torso внутри модели
     local torso = char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart")
     if torso then
         local current = torso
         while current do
             if current:IsA("Model") and current ~= char then
-                -- Проверяем, это машина? (есть PrimaryPart или VehicleSeat)
                 if current.PrimaryPart or current:FindFirstChildWhichIsA("VehicleSeat") then
                     return current
                 end
@@ -62,7 +58,6 @@ local function getMyCar()
         end
     end
     
-    -- Способ 3: поиск по Owner
     local folders = {workspace:FindFirstChild("Vehicles"), workspace:FindFirstChild("CarCollection"), workspace}
     for _, folder in pairs(folders) do
         if folder then
@@ -77,7 +72,6 @@ local function getMyCar()
         end
     end
     
-    -- Способ 4: самая близкая модель с VehicleSeat
     if torso then
         local nearest, minDist = nil, 20
         for _, v in pairs(workspace:GetDescendants()) do
@@ -98,14 +92,11 @@ local function getMyCar()
     return nil
 end
 
--- Получить читаемое имя машины (а не "Body")
 local function getCarDisplayName(car)
     if not car then return "???" end
-    -- Модель могла называться "Body", ищем родительскую модель
     if car.Name == "Body" and car.Parent and car.Parent:IsA("Model") then
         return car.Parent.Name
     end
-    -- Популярные дочерние детали с читаемым именем
     for _, child in pairs(car:GetChildren()) do
         if child:IsA("Model") and child.Name ~= "Body" then
             return child.Name
@@ -116,7 +107,6 @@ end
 
 -- ==================== ПОИСК КНОПКИ РЕСПАВНА ====================
 local function findSpawnButton()
-    -- Ищем в любом GUI кнопку спавна (не заблокированную)
     local playerGui = localPlayer:WaitForChild("PlayerGui")
     for _, gui in pairs(playerGui:GetChildren()) do
         if gui:IsA("ScreenGui") then
@@ -124,9 +114,7 @@ local function findSpawnButton()
                 if (obj:IsA("TextButton") or obj:IsA("ImageButton")) and obj.Visible and obj.Active then
                     local text = obj:IsA("TextButton") and obj.Text or ""
                     local name = obj.Name:lower()
-                    -- Ищем слова "spawn", "get", "car", "vehicle"
                     if name:find("spawn") or name:find("get") or text:lower():find("spawn") or text:lower():find("car") then
-                        -- Проверка, не заблокирована ли
                         local locked = false
                         if text:lower():find("vip") or text:lower():find("pass") then locked = true end
                         if obj.BackgroundColor3 and obj.BackgroundColor3.r < 0.3 and obj.BackgroundColor3.g < 0.3 and obj.BackgroundColor3.b < 0.3 then
@@ -358,7 +346,6 @@ carLabel.Font = Enum.Font.GothamBold
 carLabel.TextSize = 10
 carLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Обновление инфы
 task.spawn(function()
     while task.wait(0.3) do
         pcall(function()
@@ -384,7 +371,7 @@ statsLabel.Font = Enum.Font.Gotham
 statsLabel.TextSize = 9
 statsLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- ====== МОЛОТ (РУЧНОЙ) ======
+-- ====== МОЛОТ ======
 local hammerActive = false
 local hammerHeight = 80
 local hammerSpeed = 500
@@ -429,7 +416,6 @@ local function runHammer()
         local destroyed = doOneHammerHit()
         if destroyed then
             carLabel.Text = "💀 Уничтожена!"
-            statsLabel.Text = "Ударов: " .. hammerHits .. " | Сломано: " .. carsDestroyed .. " | Авто: " .. autoFarmCount
         end
         hammerHits = hammerHits + 1
         statsLabel.Text = "Ударов: " .. hammerHits .. " | Сломано: " .. carsDestroyed .. " | Авто: " .. autoFarmCount
@@ -451,7 +437,7 @@ hammerBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ====== АВТО-ФАРМ (С РЕСПАВНОМ) ======
+-- ====== АВТО-ФАРМ ======
 local autoFarmActive = false
 
 local autoFarmBtn = Instance.new("TextButton", farmTab)
@@ -468,7 +454,6 @@ Instance.new("UIStroke", autoFarmBtn).Color = Theme.Orange
 
 local function runAutoFarm()
     while autoFarmActive do
-        -- Если нет машины, спавним
         local car = getMyCar()
         if not car then
             carLabel.Text = "🚗 Респавн..."
@@ -477,32 +462,34 @@ local function runAutoFarm()
             car = getMyCar()
             if not car then
                 task.wait(2)
-                continue -- команда continue не работает в Lua, используем return в pcall
+                -- идём на следующий цикл
             end
         end
         
-        -- Бьём молотом
-        local destroyed = false
-        local attempts = 0
-        while not destroyed and attempts < 20 and autoFarmActive do
-            destroyed = doOneHammerHit()
-            hammerHits = hammerHits + 1
-            attempts = attempts + 1
-            statsLabel.Text = "Ударов: " .. hammerHits .. " | Сломано: " .. carsDestroyed .. " | Авто: " .. autoFarmCount
-            carLabel.Text = "🔨 Удар " .. attempts .. "..."
-            task.wait(0.2)
-        end
-        
-        if destroyed then
-            carsDestroyed = carsDestroyed + 1
-            autoFarmCount = autoFarmCount + 1
-            carLabel.Text = "💀 Сломана! +1 автоцикл"
-            statsLabel.Text = "Ударов: " .. hammerHits .. " | Сломано: " .. carsDestroyed .. " | Авто: " .. autoFarmCount
-            task.wait(1)
-            -- Респавн
-            carLabel.Text = "🚗 Респавн..."
-            clickSpawn()
-            task.wait(3)
+        if car then
+            local destroyed = false
+            local attempts = 0
+            while not destroyed and attempts < 20 and autoFarmActive do
+                destroyed = doOneHammerHit()
+                hammerHits = hammerHits + 1
+                attempts = attempts + 1
+                statsLabel.Text = "Ударов: " .. hammerHits .. " | Сломано: " .. carsDestroyed .. " | Авто: " .. autoFarmCount
+                carLabel.Text = "🔨 Удар " .. attempts .. "..."
+                task.wait(0.2)
+            end
+            
+            if destroyed then
+                carsDestroyed = carsDestroyed + 1
+                autoFarmCount = autoFarmCount + 1
+                carLabel.Text = "💀 Сломана! +1 автоцикл"
+                statsLabel.Text = "Ударов: " .. hammerHits .. " | Сломано: " .. carsDestroyed .. " | Авто: " .. autoFarmCount
+                task.wait(1)
+                carLabel.Text = "🚗 Респавн..."
+                clickSpawn()
+                task.wait(3)
+            else
+                task.wait(1)
+            end
         end
     end
 end
@@ -531,7 +518,6 @@ settingsTitle.Font = Enum.Font.GothamBold
 settingsTitle.TextSize = 11
 settingsTitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- Высота
 local heightLabel = Instance.new("TextLabel", settingsTab)
 heightLabel.Size = UDim2.new(1, 0, 0, 18)
 heightLabel.BackgroundTransparency = 1
@@ -561,7 +547,6 @@ heightInput.FocusLost:Connect(function()
     end
 end)
 
--- Скорость
 local speedLabel = Instance.new("TextLabel", settingsTab)
 speedLabel.Size = UDim2.new(1, 0, 0, 18)
 speedLabel.BackgroundTransparency = 1
@@ -578,4 +563,28 @@ speedInput.Text = "500"
 speedInput.TextColor3 = Theme.TextMain
 speedInput.Font = Enum.Font.Gotham
 speedInput.TextSize = 13
-speedInpu
+speedInput.PlaceholderText = "100-1500"
+Instance.new("UICorner", speedInput).CornerRadius = UDim.new(0, 5)
+
+speedInput.FocusLost:Connect(function()
+    local val = tonumber(speedInput.Text)
+    if val and val >= 100 and val <= 1500 then
+        hammerSpeed = val
+        speedLabel.Text = "⚡ Скорость удара: " .. val
+    else
+        speedInput.Text = tostring(hammerSpeed)
+    end
+end)
+
+local resetBtn = Instance.new("TextButton", settingsTab)
+resetBtn.Size = UDim2.new(1, 0, 0, 32)
+resetBtn.BackgroundColor3 = Theme.BtnBg
+resetBtn.Text = "🔄 Сбросить статистику"
+resetBtn.TextColor3 = Theme.TextSub
+resetBtn.Font = Enum.Font.GothamBold
+resetBtn.TextSize = 11
+resetBtn.BorderSizePixel = 0
+Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 5)
+
+resetBtn.MouseButton1Click:Connect(function()
+   
