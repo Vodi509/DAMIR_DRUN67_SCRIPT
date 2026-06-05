@@ -1,12 +1,12 @@
 -- [[ DAMIR_DRUN67 ULTIMATE DELTA-STYLE v11 ]] --
--- Исправлена картинка кота, добавлен навигатор по крашерам и режим "Автофарм Всего"
+-- Исправленная навигация, Автофарм "Все", Delta-интерфейс
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DamirSpeedhackGui"
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Компактный стиль Delta
+-- Создание Delta-стиля
 local function createRounded(parent, size, pos, color)
     local frame = Instance.new("Frame", parent)
     frame.Size = size
@@ -30,48 +30,48 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.BackgroundTransparency = 1
 
--- Кот-сворачиватель (исправлен)
+-- Кот-сворачиватель (круглый)
 local CatBtn = Instance.new("ImageButton", ScreenGui)
 CatBtn.Size = UDim2.new(0, 50, 0, 50)
 CatBtn.Position = UDim2.new(0.02, 0, 0.05, 0)
-CatBtn.Image = "rbxassetid://18314115147"
+CatBtn.Image = "rbxassetid://18314115147" -- Твоя иконка
 CatBtn.Visible = false
 CatBtn.BorderSizePixel = 0
-Instance.new("UICorner", CatBtn).CornerRadius = UDim.new(1, 0)
+local CatCorner = Instance.new("UICorner", CatBtn)
+CatCorner.CornerRadius = UDim.new(1, 0)
 
--- Функции управления
+-- Логика навигации
 local function getBestCrusher()
     local cFolder = workspace:FindFirstChild("Crushers")
     if not cFolder then return nil end
-    -- Ищем Frenzy или Bonus
     for _, v in pairs(cFolder:GetChildren()) do
         if v:FindFirstChild("Status") and (v.Status.Value == "Frenzy" or v.Status.Value == "Bonus") then
             return v:FindFirstChild("Base")
         end
     end
-    -- Если нет, берем первый попавшийся
     return cFolder:GetChildren()[1]:FindFirstChild("Base")
 end
 
--- Автофарм всего
+-- Автофарм всего (кроме квестов)
 local AutoEverything = false
 local function AutoFarmLoop()
     task.spawn(function()
         while AutoEverything do
             local lp = game.Players.LocalPlayer
-            local car = lp.Character and lp.Character:FindFirstChild("Humanoid") and lp.Character.Humanoid.SeatPart and lp.Character.Humanoid.SeatPart.Parent
+            local seat = lp.Character and lp.Character:FindFirstChild("Humanoid") and lp.Character.Humanoid.SeatPart
             
-            if not car then
+            if not seat then
                 pcall(function() game:GetService("ReplicatedStorage").NetworkRemote.SpawnVehicle:InvokeServer(1) end)
             else
+                local car = seat.Parent
                 local target = getBestCrusher()
                 if target then
-                    car:MoveTo(target.Position) -- Плавный подъезд
-                    task.wait(1)
+                    car:MoveTo(target.Position)
+                    task.wait(1.5)
                     car.PrimaryPart.CFrame = target.CFrame + Vector3.new(0, 5, 0)
                 end
             end
-            task.wait(3)
+            task.wait(2)
         end
     end)
 end
@@ -79,7 +79,7 @@ end
 -- Кнопка Фарм
 local FarmBtn = Instance.new("TextButton", MainFrame)
 FarmBtn.Size = UDim2.new(0.9, 0, 0, 40)
-FarmBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
+FarmBtn.Position = UDim2.new(0.05, 0, 0.3, 0)
 FarmBtn.Text = "АВТОФАРМ ВСЕГО"
 FarmBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 FarmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -110,7 +110,7 @@ end)
 -- Подпись
 local Signature = Instance.new("TextLabel", MainFrame)
 Signature.Size = UDim2.new(1, 0, 0, 20)
-Signature.Position = UDim2.new(0, 0, 0.9, 0)
+Signature.Position = UDim2.new(0, 0, 0.85, 0)
 Signature.Text = "by DAMIR_DRUN67"
 Signature.TextColor3 = Color3.fromRGB(100, 100, 100)
 Signature.BackgroundTransparency = 1
