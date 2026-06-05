@@ -1,386 +1,434 @@
--- [[ DAMIR_DRUN67 SCRIPT v5 - ULTIMATE MULTI-TAB EDITION ]] --
+-- [[ DAMIR_DRUN67 UNIQUE CUSTOM UI & AUTOFARM v7 ]] --
+-- Полностью собственный интерфейс без сторонних библиотек (Rayfield-Free)
+-- Проверен на совместимость с Delta Executor (2026)
 
-if game.CoreGui:FindFirstChild("DamirScriptGui") then
-    game.CoreGui.DamirScriptGui:Destroy()
+if game.CoreGui:FindFirstChild("DamirUniqueGui") then
+    game.CoreGui.DamirUniqueGui:Destroy()
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DamirScriptGui"
+ScreenGui.Name = "DamirUniqueGui"
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Глобальные переменные настроек
+-- Глобальные состояния скрипта
 local currentLang = "RU"
 local currentThemeIdx = 1
 local SafeCash = false
 local SafeQuests = false
 local AutoPlatinum = false
 
--- Цветовые темы
-local colorThemes = {
-    Color3.fromRGB(0, 170, 255),  -- Неоновый Голубой
-    Color3.fromRGB(46, 204, 113), -- Изумрудный Зеленый
-    Color3.fromRGB(231, 76, 60),  -- Рубиновый Красный
-    Color3.fromRGB(241, 196, 15), -- Золотой Янтарный
-    Color3.fromRGB(155, 89, 182)  -- Аметистовый Фиолетовый
+-- Уникальные кастомные палитры (1: Яркий акцент, 2: Глубокий фон меню, 3: Более темные панели)
+local themes = {
+    {accent = Color3.fromRGB(0, 180, 255),  bg = Color3.fromRGB(16, 22, 33),  panel = Color3.fromRGB(11, 15, 23)},  -- Кибер-Синий
+    {accent = Color3.fromRGB(46, 204, 113), bg = Color3.fromRGB(16, 30, 22),  panel = Color3.fromRGB(10, 20, 14)},  -- Токсично-Зеленый
+    {accent = Color3.fromRGB(231, 76, 60),  bg = Color3.fromRGB(30, 16, 16),  panel = Color3.fromRGB(20, 10, 10)},  -- Алый Импульс
+    {accent = Color3.fromRGB(241, 196, 15), bg = Color3.fromRGB(30, 26, 15),  panel = Color3.fromRGB(20, 17, 10)},  -- Неоновый Янтарный
+    {accent = Color3.fromRGB(155, 89, 182), bg = Color3.fromRGB(24, 16, 33),  panel = Color3.fromRGB(15, 10, 22)}   -- Спектрально-Фиолетовый
 }
 
--- Таблица локализации (Перевод)
-local translations = {
+local dict = {
     RU = {
-        title = "🛡️ DAMIR_DRUN67 SCRIPT v5",
-        tabMain = "🏠 Главная", tabFarm = "⚙️ Фарм", tabPass = "🎁 Пассы",
-        inCar = "🚗 Вы в машине", notInCar = "❌ Вы не в машине", checking = "Проверка...",
-        farmOn = "💰 Фарм Денег: ВКЛ", farmOff = "💰 Фарм Денег: ВЫКЛ",
-        questOn = "📜 Авто-Квесты: ВКЛ", questOff = "📜 Авто-Квесты: ВЫКЛ",
-        platOn = "💎 Авто-Платина: ВКЛ", platOff = "💎 Авто-Платина: ВЫКЛ",
-        langBtn = "🌐 Язык: RU", colorBtn = "🎨 Сменить цвет темы",
-        gp1 = "⚡ Фейк x2 Деньги", gp2 = "🏎️ Открыть Суперкары", gp3 = "👑 Элитный Статус",
-        gpActive = "АКТИВИРОВАНО (Визуал)", statusTitle = "Статус машины:"
+        title = "⚡ DAMIR CUSTOM UI v7",
+        tabMain = "🏠 Главная", tabFarm = "⚙️ Автофарм", tabPass = "🎁 Геймпассы",
+        carStatusIn = "🚗 Статус: Вы внутри транспорта", carStatusOut = "❌ Статус: Сядьте в машину",
+        farmOn = "💰 Фарм Денег: АКТИВЕН", farmOff = "💰 Фарм Денег: ВЫКЛЮЧЕН",
+        questOn = "📜 Авто-Квесты: АКТИВНЫ", questOff = "📜 Авто-Квесты: ВЫКЛЮЧЕНЫ",
+        platOn = "💎 Фарм Платины: АКТИВЕН", platOff = "💎 Фарм Платины: ВЫКЛЮЧЕН",
+        btnLang = "🌐 Сменить Язык: RU", btnColor = "🎨 Сменить Цвет Фона",
+        gp1 = "⚡ Fake x2 Cash (Визуал)", gp2 = "🏎️ Unlock Supercars (Визуал)", gp3 = "👑 Elite VIP (Визуал)",
+        gpDone = "УСПЕШНО АКТИВИРОВАНО"
     },
     EN = {
-        title = "🛡️ DAMIR_DRUN67 SCRIPT v5",
-        tabMain = "🏠 Main", tabFarm = "⚙️ Farm", tabPass = "🎁 Passes",
-        inCar = "🚗 You in the car", notInCar = "❌ You not in the car", checking = "Checking...",
-        farmOn = "💰 Farm Cash: ON", farmOff = "💰 Farm Cash: OFF",
-        questOn = "📜 Auto-Quests: ON", questOff = "📜 Auto-Quests: OFF",
-        platOn = "💎 Auto-Platinum: ON", platOff = "💎 Auto-Platinum: OFF",
-        langBtn = "🌐 Lang: EN", colorBtn = "🎨 Change GUI Color",
-        gp1 = "⚡ Fake x2 Cash", gp2 = "🏎️ Unlock Supercars", gp3 = "👑 Elite VIP Status",
-        gpActive = "ACTIVATED (Visual)", statusTitle = "Car Status:"
+        title = "⚡ DAMIR CUSTOM UI v7",
+        tabMain = "🏠 Home", tabFarm = "⚙️ Autofarm", tabPass = "🎁 Gamepasses",
+        carStatusIn = "🚗 Status: Inside Vehicle", carStatusOut = "❌ Status: Not in vehicle",
+        farmOn = "💰 Money Farm: ACTIVE", farmOff = "💰 Money Farm: DISABLED",
+        questOn = "📜 Auto-Quests: ACTIVE", questOff = "📜 Auto-Quests: DISABLED",
+        platOn = "💎 Platinum Farm: ACTIVE", platOff = "💎 Platinum Farm: DISABLED",
+        btnLang = "🌐 Change Lang: EN", btnColor = "🎨 Change Interface Background",
+        gp1 = "⚡ Fake x2 Cash (Visual)", gp2 = "🏎️ Unlock Supercars (Visual)", gp3 = "👑 Elite VIP (Visual)",
+        gpDone = "SUCCESSFULLY ACTIVATED"
     }
 }
 
--- Главное Окно
+-- Создание каркаса интерфейса (Drag-система)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 360, 0, 340)
+MainFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
+MainFrame.Size = UDim2.new(0, 420, 0, 320)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.BorderSizePixel = 2
-MainFrame.BorderColor3 = colorThemes[currentThemeIdx]
+MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0) -- Черная обводка всего окна
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
-UICorner.Parent = MainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = MainFrame
 
--- Заголовок
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Font = Enum.Font.SourceSansBold
-Title.Text = translations[currentLang].title
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 18
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 10)
-TitleCorner.Parent = Title
+-- Боковая панель для уникального расположения табов
+local Sidebar = Instance.new("Frame")
+Sidebar.Name = "Sidebar"
+Sidebar.Parent = MainFrame
+Sidebar.Size = UDim2.new(0, 130, 1, 0)
+Sidebar.BorderSizePixel = 2
+Sidebar.BorderColor3 = Color3.fromRGB(0, 0, 0) -- Черная обводка сайдбара
 
--- Кнопка закрытия
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Name = "CloseBtn"
-CloseBtn.Parent = MainFrame
-CloseBtn.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
-CloseBtn.Position = UDim2.new(0.88, 0, 0, 7)
-CloseBtn.Size = UDim2.new(0, 35, 0, 25)
-CloseBtn.Font = Enum.Font.SourceSansBold
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 14
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 5)
-CloseCorner.Parent = CloseBtn
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+local SidebarCorner = Instance.new("UICorner")
+SidebarCorner.CornerRadius = UDim.new(0, 8)
+SidebarCorner.Parent = Sidebar
 
--- Панель Вкладок (Табы)
-local TabPanel = Instance.new("Frame")
-TabPanel.Parent = MainFrame
-TabPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-TabPanel.Position = UDim2.new(0, 0, 0, 40)
-TabPanel.Size = UDim2.new(1, 0, 0, 35)
+-- Линия-заглушка для красивого скругления
+local HideOverlap = Instance.new("Frame")
+HideOverlap.Size = UDim2.new(0, 10, 1, 0)
+HideOverlap.Position = UDim2.new(1, -10, 0, 0)
+HideOverlap.BackgroundColor3 = Sidebar.BackgroundColor3
+HideOverlap.BorderSizePixel = 0
+HideOverlap.Parent = Sidebar
 
+-- Главная рабочая область для контента
+local Container = Instance.new("Frame")
+Container.Name = "Container"
+Container.Parent = MainFrame
+Container.Position = UDim2.new(0, 135, 0, 45)
+Container.Size = UDim2.new(1, -140, 1, -55)
+Container.BackgroundTransparency = 1
+
+-- Название скрипта в сайдбаре
+local LogoLabel = Instance.new("TextLabel")
+LogoLabel.Parent = Sidebar
+LogoLabel.Size = UDim2.new(1, 0, 0, 45)
+LogoLabel.Font = Enum.Font.SourceSansBold
+LogoLabel.Text = "DAMIR SCRIPTS"
+LogoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+LogoLabel.TextSize = 15
+LogoLabel.BackgroundTransparency = 1
+
+-- Верхняя плашка названия
+local TopHeader = Instance.new("TextLabel")
+TopHeader.Parent = MainFrame
+TopHeader.Position = UDim2.new(0, 135, 0, 0)
+TopHeader.Size = UDim2.new(1, -135, 0, 40)
+TopHeader.Font = Enum.Font.SourceSansBold
+TopHeader.Text = dict[currentLang].title
+TopHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
+TopHeader.TextSize = 16
+TopHeader.TextXAlignment = Enum.TextXAlignment.Left
+TopHeader.BackgroundTransparency = 1
+
+-- Кнопка закрытия оригинальной формы
+local ExitButton = Instance.new("TextButton")
+ExitButton.Parent = MainFrame
+ExitButton.Position = UDim2.new(1, -30, 0, 8)
+ExitButton.Size = UDim2.new(0, 22, 0, 22)
+ExitButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ExitButton.Font = Enum.Font.SourceSansBold
+ExitButton.Text = "×"
+ExitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExitButton.TextSize = 18
+ExitButton.BorderSizePixel = 1
+ExitButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+local ExitCorner = Instance.new("UICorner") ExitCorner.CornerRadius = UDim.new(0, 4) ExitCorner.Parent = ExitButton
+ExitButton.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- Создание табов (Кнопок переключения)
 local TabMainBtn = Instance.new("TextButton")
 local TabFarmBtn = Instance.new("TextButton")
 local TabPassBtn = Instance.new("TextButton")
 
-local function StyleTabBtn(btn, pos, text)
-    btn.Parent = TabPanel
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+local function CreateTabNav(btn, text, pos)
+    btn.Parent = Sidebar
     btn.Position = pos
-    btn.Size = UDim2.new(0.31, 0, 1, 0)
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
     btn.Font = Enum.Font.SourceSansBold
     btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
     btn.TextSize = 14
+    btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+    btn.BorderSizePixel = 2
+    btn.BorderColor3 = Color3.fromRGB(0, 0, 0) -- Черная обводка кнопок навигации
+    local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0, 5) c.Parent = btn
 end
 
-StyleTabBtn(TabMainBtn, UDim2.new(0.02, 0, 0, 0), translations[currentLang].tabMain)
-StyleTabBtn(TabFarmBtn, UDim2.new(0.34, 0, 0, 0), translations[currentLang].tabFarm)
-StyleTabBtn(TabPassBtn, UDim2.new(0.66, 0, 0, 0), translations[currentLang].tabPass)
+CreateTabNav(TabMainBtn, dict[currentLang].tabMain, UDim2.new(0.05, 0, 0, 55))
+CreateTabNav(TabFarmBtn, dict[currentLang].tabFarm, UDim2.new(0.05, 0, 0, 95))
+CreateTabNav(TabPassBtn, dict[currentLang].tabPass, UDim2.new(0.05, 0, 0, 135))
 
--- Контейнеры для содержимого вкладок
-local ContentMain = Instance.new("Frame")
-local ContentFarm = Instance.new("Frame")
-local ContentPass = Instance.new("Frame")
+-- Элементы содержимого
+local PageMain = Instance.new("Frame")
+local PageFarm = Instance.new("Frame")
+local PagePass = Instance.new("Frame")
 
-local function StyleContentFrame(f)
-    f.Parent = MainFrame
-    f.BackgroundTransparency = 1
-    f.Position = UDim2.new(0, 0, 0, 75)
-    f.Size = UDim2.new(1, 0, 1, -75)
-    f.Visible = false
+local function SetupPage(p)
+    p.Parent = Container
+    p.Size = UDim2.new(1, 0, 1, 0)
+    p.BackgroundTransparency = 1
+    p.Visible = false
 end
-StyleContentFrame(ContentMain)
-StyleContentFrame(ContentFarm)
-StyleContentFrame(ContentPass)
-ContentMain.Visible = true -- Стартовая вкладка
-TabMainBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+SetupPage(PageMain)
+SetupPage(PageFarm)
+SetupPage(PagePass)
+PageMain.Visible = true
 
--- ВКЛАДКА 1: ГЛАВНАЯ
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Parent = ContentMain
-StatusLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-StatusLabel.Position = UDim2.new(0.05, 0, 0.1, 0)
-StatusLabel.Size = UDim2.new(0.9, 0, 0, 40)
-StatusLabel.Font = Enum.Font.SourceSansBold
-StatusLabel.Text = translations[currentLang].checking
-StatusLabel.TextColor3 = Color3.fromRGB(241, 196, 15)
-StatusLabel.TextSize = 16
-local SC = Instance.new("UICorner") SC.CornerRadius = UDim.new(0, 6) SC.Parent = StatusLabel
-
-local ChangeLangBtn = Instance.new("TextButton")
-local ChangeColorBtn = Instance.new("TextButton")
-
-local function StyleMenuBtn(btn, frame, pos, text)
-    btn.Parent = frame
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+-- Стилизация функциональных кнопок с ОБЯЗАТЕЛЬНОЙ черной обводкой
+local function BuildActionButton(btn, parent, text, pos)
+    btn.Parent = parent
     btn.Position = pos
-    btn.Size = UDim2.new(0.9, 0, 0, 45)
+    btn.Size = UDim2.new(1, 0, 0, 42)
     btn.Font = Enum.Font.SourceSansBold
     btn.Text = text
+    btn.TextSize = 14
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 15
+    btn.BorderSizePixel = 2
+    btn.BorderColor3 = Color3.fromRGB(0, 0, 0) -- Черный контур кнопок
     local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0, 6) c.Parent = btn
 end
 
-StyleMenuBtn(ChangeLangBtn, ContentMain, UDim2.new(0.05, 0, 0.35, 0), translations[currentLang].langBtn)
-StyleMenuBtn(ChangeColorBtn, ContentMain, UDim2.new(0.05, 0, 0.60, 0), translations[currentLang].colorBtn)
+-- PAGE 1: ГЛАВНАЯ
+local VehicleMonitor = Instance.new("TextLabel")
+VehicleMonitor.Parent = PageMain
+VehicleMonitor.Size = UDim2.new(1, 0, 0, 38)
+VehicleMonitor.Font = Enum.Font.SourceSansBold
+VehicleMonitor.Text = dict[currentLang].carStatusOut
+VehicleMonitor.TextSize = 14
+VehicleMonitor.BorderSizePixel = 2
+VehicleMonitor.BorderColor3 = Color3.fromRGB(0, 0, 0)
+local VCorner = Instance.new("UICorner") VCorner.CornerRadius = UDim.new(0, 6) VCorner.Parent = VehicleMonitor
 
--- ВКЛАДКА 2: НАСТРОЙКИ АВТО-ФАРМА
-local ToggleCashBtn = Instance.new("TextButton")
-local ToggleQuestBtn = Instance.new("TextButton")
-local TogglePlatBtn = Instance.new("TextButton")
+local LangAction = Instance.new("TextButton")
+local ThemeAction = Instance.new("TextButton")
+BuildActionButton(LangAction, PageMain, dict[currentLang].btnLang, UDim2.new(0, 0, 0, 50))
+BuildActionButton(ThemeAction, PageMain, dict[currentLang].btnColor, UDim2.new(0, 0, 0, 100))
 
-StyleMenuBtn(ToggleCashBtn, ContentFarm, UDim2.new(0.05, 0, 0.05, 0), translations[currentLang].farmOff)
-StyleMenuBtn(ToggleQuestBtn, ContentFarm, UDim2.new(0.05, 0, 0.30, 0), translations[currentLang].questOff)
-StyleMenuBtn(TogglePlatBtn, ContentFarm, UDim2.new(0.05, 0, 0.55, 0), translations[currentLang].platOff)
+-- PAGE 2: АВТОФАРМ
+local FarmCashAction = Instance.new("TextButton")
+local FarmQuestAction = Instance.new("TextButton")
+local FarmPlatAction = Instance.new("TextButton")
+BuildActionButton(FarmCashAction, PageFarm, dict[currentLang].farmOff, UDim2.new(0, 0, 0, 0))
+BuildActionButton(FarmQuestAction, PageFarm, dict[currentLang].questOff, UDim2.new(0, 0, 0, 50))
+BuildActionButton(FarmPlatAction, PageFarm, dict[currentLang].platOff, UDim2.new(0, 0, 0, 100))
 
--- ВКЛАДКА 3: БЕСПЛАТНЫЕ ГЕЙМПАССЫ (ВИЗУАЛ ХАК)
-local Gp1Btn = Instance.new("TextButton")
-local Gp2Btn = Instance.new("TextButton")
-local Gp3Btn = Instance.new("TextButton")
+-- PAGE 3: ГЕЙМПАССЫ
+local Gp1Action = Instance.new("TextButton")
+local Gp2Action = Instance.new("TextButton")
+local Gp3Action = Instance.new("TextButton")
+BuildActionButton(Gp1Action, PagePass, dict[currentLang].gp1, UDim2.new(0, 0, 0, 0))
+BuildActionButton(Gp2Action, PagePass, dict[currentLang].gp2, UDim2.new(0, 0, 0, 50))
+BuildActionButton(Gp3Action, PagePass, dict[currentLang].gp3, UDim2.new(0, 0, 0, 100))
 
-StyleMenuBtn(Gp1Btn, ContentPass, UDim2.new(0.05, 0, 0.05, 0), translations[currentLang].gp1)
-StyleMenuBtn(Gp2Btn, ContentPass, UDim2.new(0.05, 0, 0.30, 0), translations[currentLang].gp2)
-StyleMenuBtn(Gp3Btn, ContentPass, UDim2.new(0.05, 0, 0.55, 0), translations[currentLang].gp3)
-
--- Функция переключения вкладок
-local function SwitchTab(activeContent, activeBtn)
-    ContentMain.Visible = false
-    ContentFarm.Visible = false
-    ContentPass.Visible = false
-    TabMainBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabFarmBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabPassBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+-- СИСТЕМА ДИНАМИЧЕСКИХ ОБНОВЛЕНИЙ ЦВЕТА И ТЕМЫ (ПОЛНАЯ СИНХРОНИЗАЦИЯ С ФОНОМ)
+local function ApplyInterfaceTheme()
+    local cTheme = themes[currentThemeIdx]
     
-    activeContent.Visible = true
-    activeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    -- Синхронно перекрашиваем все фоны окон!
+    MainFrame.BackgroundColor3 = cTheme.bg
+    Sidebar.BackgroundColor3 = cTheme.panel
+    HideOverlap.BackgroundColor3 = cTheme.panel
+    VehicleMonitor.BackgroundColor3 = cTheme.panel
+    
+    -- Сброс неактивных кнопок вкладок
+    TabMainBtn.BackgroundColor3 = cTheme.panel
+    TabFarmBtn.BackgroundColor3 = cTheme.panel
+    TabPassBtn.BackgroundColor3 = cTheme.panel
+    
+    -- Подсвечиваем активную страницу в боковом меню
+    if PageMain.Visible then TabMainBtn.BackgroundColor3 = cTheme.accent end
+    if PageFarm.Visible then TabFarmBtn.BackgroundColor3 = cTheme.accent end
+    if PagePass.Visible then TabPassBtn.BackgroundColor3 = cTheme.accent end
+    
+    -- Статичные служебные кнопки
+    LangAction.BackgroundColor3 = cTheme.panel
+    ThemeAction.BackgroundColor3 = cTheme.panel
+    
+    -- Переключатели автофарма: неоновый цвет если активны, темный цвет если выключены
+    FarmCashAction.BackgroundColor3 = SafeCash and cTheme.accent or cTheme.panel
+    FarmQuestAction.BackgroundColor3 = SafeQuests and cTheme.accent or cTheme.panel
+    FarmPlatAction.BackgroundColor3 = AutoPlatinum and cTheme.accent or cTheme.panel
+    
+    -- Визуальные пассы
+    Gp1Action.BackgroundColor3 = Gp1Action.Active and cTheme.panel or Color3.fromRGB(39, 174, 96)
+    Gp2Action.BackgroundColor3 = Gp2Action.Active and cTheme.panel or Color3.fromRGB(39, 174, 96)
+    Gp3Action.BackgroundColor3 = Gp3Action.Active and cTheme.panel or Color3.fromRGB(39, 174, 96)
 end
 
-TabMainBtn.MouseButton1Click:Connect(function() SwitchTab(ContentMain, TabMainBtn) end)
-TabFarmBtn.MouseButton1Click:Connect(function() SwitchTab(ContentFarm, TabFarmBtn) end)
-TabPassBtn.MouseButton1Click:Connect(function() SwitchTab(ContentPass, TabPassBtn) end)
-
--- Перевод текстов при смене языка
-local function UpdateLocalization()
-    Title.Text = translations[currentLang].title
-    TabMainBtn.Text = translations[currentLang].tabMain
-    TabFarmBtn.Text = translations[currentLang].tabFarm
-    TabPassBtn.Text = translations[currentLang].tabPass
-    ChangeLangBtn.Text = translations[currentLang].langBtn
-    ChangeColorBtn.Text = translations[currentLang].colorBtn
+local function RerenderText()
+    TopHeader.Text = dict[currentLang].title
+    TabMainBtn.Text = dict[currentLang].tabMain
+    TabFarmBtn.Text = dict[currentLang].tabFarm
+    TabPassBtn.Text = dict[currentLang].tabPass
+    LangAction.Text = dict[currentLang].btnLang
+    ThemeAction.Text = dict[currentLang].btnColor
     
-    ToggleCashBtn.Text = SafeCash and translations[currentLang].farmOn or translations[currentLang].farmOff
-    ToggleQuestBtn.Text = SafeQuests and translations[currentLang].questOn or translations[currentLang].questOff
-    TogglePlatBtn.Text = AutoPlatinum and translations[currentLang].platOn or translations[currentLang].platOff
+    FarmCashAction.Text = SafeCash and dict[currentLang].farmOn or dict[currentLang].farmOff
+    FarmQuestAction.Text = SafeQuests and dict[currentLang].questOn or dict[currentLang].questOff
+    FarmPlatAction.Text = AutoPlatinum and dict[currentLang].platOn or dict[currentLang].platOff
     
-    if not Gp1Btn.Active then Gp1Btn.Text = translations[currentLang].gp1 end
-    if not Gp2Btn.Active then Gp2Btn.Text = translations[currentLang].gp2 end
-    if not Gp3Btn.Active then Gp3Btn.Text = translations[currentLang].gp3 end
+    if not Gp1Action.Active then Gp1Action.Text = dict[currentLang].gpDone end
+    if not Gp2Action.Active then Gp2Action.Text = dict[currentLang].gpDone end
+    if not Gp3Action.Active then Gp3Action.Text = dict[currentLang].gpDone end
 end
 
--- Смена языка
-ChangeLangBtn.MouseButton1Click:Connect(function()
+-- Логика вкладок
+local function NavigateTo(targetPage)
+    PageMain.Visible = false; PageFarm.Visible = false; PagePass.Visible = false
+    targetPage.Visible = true
+    ApplyInterfaceTheme()
+end
+
+TabMainBtn.MouseButton1Click:Connect(function() NavigateTo(PageMain) end)
+TabFarmBtn.MouseButton1Click:Connect(function() NavigateTo(PageFarm) end)
+TabPassBtn.MouseButton1Click:Connect(function() NavigateTo(PagePass) end)
+
+-- Переключатели локализации и цветовой гаммы фона
+LangAction.MouseButton1Click:Connect(function()
     currentLang = (currentLang == "RU") and "EN" or "RU"
-    UpdateLocalization()
+    RerenderText()
 end)
 
--- ЖЕЛЕЗНАЯ СМЕНА ЦВЕТА ИНТЕРФЕЙСА
-ChangeColorBtn.MouseButton1Click:Connect(function()
+ThemeAction.MouseButton1Click:Connect(function()
     currentThemeIdx = currentThemeIdx + 1
-    if currentThemeIdx > #colorThemes then currentThemeIdx = 1 end
-    
-    local targetColor = colorThemes[currentThemeIdx]
-    MainFrame.BorderColor3 = targetColor
-    
-    -- Окрашиваем активные кнопки автофарма в цвет темы, если они включены
-    if SafeCash then ToggleCashBtn.BackgroundColor3 = targetColor end
-    if SafeQuests then ToggleQuestBtn.BackgroundColor3 = targetColor end
-    if AutoPlatinum then TogglePlatBtn.BackgroundColor3 = targetColor end
+    if currentThemeIdx > #themes then currentThemeIdx = 1 end
+    ApplyInterfaceTheme()
 end)
 
--- Логика проверки нахождения в машине
-local function IsInCar()
-    local character = game.Players.LocalPlayer.Character
-    if character and character:FindFirstChild("Humanoid") then
-        if character.Humanoid.SeatPart and character.Humanoid.SeatPart:IsA("VehicleSeat") then
-            return true
+-- Валидация и проверка нахождения игрока в авто
+local function GetCurrentVehicle()
+    local char = game.Players.LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        local seat = char.Humanoid.SeatPart
+        if seat and seat:IsA("VehicleSeat") then
+            local rootModel = seat
+            while rootModel and rootModel ~= workspace do
+                if rootModel:IsA("Model") and (rootModel:FindFirstChild("Body") or rootModel:FindFirstChild("Wheels") or rootModel.Name:lower():find("car")) then
+                    return rootModel
+                end
+                rootModel = rootModel.Parent
+            end
+            return seat.Parent
         end
     end
-    return false
+    return nil
 end
 
--- Постоянное обновление статуса машины
 task.spawn(function()
-    while task.wait(0.4) do
+    while task.wait(0.5) do
         if not ScreenGui.Parent then break end
-        if IsInCar() then
-            StatusLabel.Text = translations[currentLang].inCar
-            StatusLabel.TextColor3 = Color3.fromRGB(46, 204, 113)
+        if GetCurrentVehicle() then
+            VehicleMonitor.Text = dict[currentLang].carStatusIn
+            VehicleMonitor.TextColor3 = Color3.fromRGB(46, 204, 113)
         else
-            StatusLabel.Text = translations[currentLang].notInCar
-            StatusLabel.TextColor3 = Color3.fromRGB(231, 76, 60)
+            VehicleMonitor.Text = dict[currentLang].carStatusOut
+            VehicleMonitor.TextColor3 = Color3.fromRGB(231, 76, 60)
         end
     end
 end)
 
--- Функция покраски кнопок при вкл/выкл
-local function ToggleButtonState(btn, state, txtOn, txtOff)
-    if state then
-        btn.BackgroundColor3 = colorThemes[currentThemeIdx]
-        btn.Text = txtOn
-    else
-        btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-        btn.Text = txtOff
-    end
-end
-
--- ЛОГИКА: Автофарм Денег
-ToggleCashBtn.MouseButton1Click:Connect(function()
+-- ИСПОЛНИТЕЛЬНЫЙ БЛОК АВТОФАРМА (БЕЗОПАСНАЯ СКОРОСТЬ + ПРОВЕРКА ОШИБОК)
+FarmCashAction.MouseButton1Click:Connect(function()
     SafeCash = not SafeCash
-    ToggleButtonState(ToggleCashBtn, SafeCash, translations[currentLang].farmOn, translations[currentLang].farmOff)
+    ApplyInterfaceTheme()
+    RerenderText()
     
     if SafeCash then
         task.spawn(function()
             while SafeCash do
-                if IsInCar() then
+                local currentVehicle = GetCurrentVehicle()
+                if currentVehicle then
                     pcall(function()
-                        local player = game.Players.LocalPlayer
-                        local car = workspace.CarFolder:FindFirstChild(player.Name)
-                        if car and car:FindFirstChild("Body") then
-                            for _, part in pairs(car:GetChildren()) do
-                                if part:IsA("BasePart") then
-                                    part.Velocity = Vector3.new(0, -42, 0)
-                                end
+                        for _, p in pairs(currentVehicle:GetDescendants()) do
+                            if p:IsA("BasePart") then
+                                p.Velocity = Vector3.new(0, -48, 0) -- Стабильная скорость разрушения
                             end
                         end
                     end)
                 end
-                task.wait(3.4)
+                task.wait(2.7)
             end
         end)
     end
 end)
 
--- ЛОГИКА: Авто-Квесты
-ToggleQuestBtn.MouseButton1Click:Connect(function()
+FarmQuestAction.MouseButton1Click:Connect(function()
     SafeQuests = not SafeQuests
-    ToggleButtonState(ToggleQuestBtn, SafeQuests, translations[currentLang].questOn, translations[currentLang].questOff)
+    ApplyInterfaceTheme()
+    RerenderText()
     
     if SafeQuests then
         task.spawn(function()
             while SafeQuests do
                 pcall(function()
-                    game:GetService("ReplicatedStorage").NetworkRemote:Get("ClaimQuestReward"):FireServer()
+                    local net = game:GetService("ReplicatedStorage"):FindFirstChild("NetworkRemote") or game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                    if net then
+                        for _, r in pairs(net:GetDescendants()) do
+                            if r:IsA("RemoteEvent") and (r.Name:lower():find("quest") or r.Name:lower():find("reward")) then
+                                r:FireServer()
+                            end
+                        end
+                    end
                 end)
-                task.wait(math.random(15, 22))
+                task.wait(10)
             end
         end)
     end
 end)
 
--- ЛОГИКА: АВТО-ПЛАТИНА
-TogglePlatBtn.MouseButton1Click:Connect(function()
+FarmPlatAction.MouseButton1Click:Connect(function()
     AutoPlatinum = not AutoPlatinum
-    ToggleButtonState(TogglePlatBtn, AutoPlatinum, translations[currentLang].platOn, translations[currentLang].platOff)
+    ApplyInterfaceTheme()
+    RerenderText()
     
     if AutoPlatinum then
         task.spawn(function()
             while AutoPlatinum do
-                if IsInCar() then
+                if GetCurrentVehicle() then
                     pcall(function()
-                        -- Отсылаем сигнал на сервер об уничтожении детали машины на максимальной скорости для триггера Платины
-                        local args = { [1] = "VehicleCrushed", [2] = true, [3] = "PlatinumReward" }
-                        game:GetService("ReplicatedStorage").NetworkRemote:Get("ExplosionSparks"):FireServer(unpack(args))
+                        local net = game:GetService("ReplicatedStorage"):FindFirstChild("NetworkRemote") or game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                        if net then
+                            for _, r in pairs(net:GetDescendants()) do
+                                if r:IsA("RemoteEvent") and (r.Name:lower():find("crush") or r.Name:lower():find("damage")) then
+                                    r:FireServer("VehicleCrushed", true, "PlatinumReward")
+                                end
+                            end
+                        end
                     end)
                 end
-                task.wait(2.5) -- Оптимальная безопасная задержка для платиновых наград
+                task.wait(2.0)
             end
         end)
     end
 end)
 
--- ЛОГИКА: ВЗЛОМ ГЕЙМПАССОВ (ФЕЙК-АКТИВАЦИЯ)
-local function ActivateFakePass(btn)
-    btn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
-    btn.Text = translations[currentLang].gpActive
-    btn.Active = false -- Отключаем повторные нажатия
+-- ФУНКЦИОНАЛ ПАССОВ (АКТИВАЦИЯ)
+local function SetPassState(btn)
+    btn.Text = dict[currentLang].gpDone
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.Active = false
+    ApplyInterfaceTheme()
 end
 
-Gp1Btn.MouseButton1Click:Connect(function()
-    ActivateFakePass(Gp1Btn)
+Gp1Action.MouseButton1Click:Connect(function()
+    SetPassState(Gp1Action)
     pcall(function()
-        -- Эмуляция наличия пропуска на стороне клиента
         game.Players.LocalPlayer:SetAttribute("DoubleCashPass", true)
         game.Players.LocalPlayer:SetAttribute("HasDoubleCash", true)
     end)
 end)
 
-Gp2Btn.MouseButton1Click:Connect(function()
-    ActivateFakePass(Gp2Btn)
+Gp2Action.MouseButton1Click:Connect(function()
+    SetPassState(Gp2Action)
     pcall(function()
         game.Players.LocalPlayer:SetAttribute("SupercarsPass", true)
         game.Players.LocalPlayer:SetAttribute("OwnsSupercars", true)
-        -- Визуально разблокируем скрытые кнопки в автосалоне игры
-        if game.Players.LocalPlayer.PlayerGui:FindFirstChild("CarDealership") then
-            for _, v in pairs(game.Players.LocalPlayer.PlayerGui.CarDealership:GetDescendants()) do
-                if v:IsA("Frame") and (v.Name == "Lock" or v.Name == "GamepassLock") then
-                    v.Visible = false
-                end
-            end
-        end
     end)
 end)
 
-Gp3Btn.MouseButton1Click:Connect(function()
-    ActivateFakePass(Gp3Btn)
+Gp3Action.MouseButton1Click:Connect(function()
+    SetPassState(Gp3Action)
     pcall(function()
         game.Players.LocalPlayer:SetAttribute("EliteStatus", true)
         game.Players.LocalPlayer:SetAttribute("IsVIP", true)
     end)
 end)
+
+-- Станициализация при запуске
+ApplyInterfaceTheme()
