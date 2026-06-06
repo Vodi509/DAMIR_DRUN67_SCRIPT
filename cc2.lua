@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v6.1 - SPEEDHUB + MINIMIZE ]] --
+-- [[ DAMIR_DRUN67 HUB v6.2 - SPEEDHUB NO SCROLL ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -105,7 +105,7 @@ local screenGui = Instance.new("ScreenGui", g)
 screenGui.Name = "SpeedHub"
 screenGui.ResetOnSpawn = false
 
--- Мини-панель (свёрнутое окно)
+-- Мини-панель
 local miniFrame = Instance.new("Frame", screenGui)
 miniFrame.Name = "MiniHub"
 miniFrame.Size = UDim2.new(0, 130, 0, 28)
@@ -132,7 +132,7 @@ restoreBtn.TextSize = 12
 local mainFrame = Instance.new("Frame", screenGui)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Position = UDim2.new(0.5, 0, 0.4, 0)
-mainFrame.Size = UDim2.new(0, 480, 0, 300)
+mainFrame.Size = UDim2.new(0, 480, 0, 280)
 mainFrame.BackgroundColor3 = Theme.MainBg
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -143,7 +143,7 @@ Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 8)
 Instance.new("UIStroke", mainFrame).Thickness = 1
 Instance.new("UIStroke", mainFrame).Color = Theme.StrokeDefault
 
--- Заголовок окна
+-- Заголовок
 local titleBar = Instance.new("Frame", mainFrame)
 titleBar.Size = UDim2.new(1, 0, 0, 36)
 titleBar.BackgroundColor3 = Theme.InnerBg
@@ -154,13 +154,12 @@ local titleText = Instance.new("TextLabel", titleBar)
 titleText.Size = UDim2.new(1, -50, 1, 0)
 titleText.Position = UDim2.new(0, 14, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "🐱 DAMIR HUB v6.1"
+titleText.Text = "🐱 DAMIR HUB v6.2"
 titleText.TextColor3 = Theme.TextMain
 titleText.Font = Enum.Font.GothamBold
 titleText.TextSize = 13
 titleText.TextXAlignment = Enum.TextXAlignment.Left
 
--- Кнопка закрытия
 local closeBtn = Instance.new("TextButton", titleBar)
 closeBtn.Size = UDim2.new(0, 22, 0, 22)
 closeBtn.Position = UDim2.new(1, -30, 0, 7)
@@ -185,7 +184,6 @@ sidebar.BorderSizePixel = 0
 Instance.new("UIStroke", sidebar).Thickness = 1
 Instance.new("UIStroke", sidebar).Color = Theme.StrokeDefault
 
--- Кнопка сворачивания (надпись DAMIR HUB)
 local logoLabel = Instance.new("TextButton", sidebar)
 logoLabel.Size = UDim2.new(1, 0, 0, 40)
 logoLabel.BackgroundTransparency = 1
@@ -203,20 +201,6 @@ restoreBtn.MouseButton1Click:Connect(function()
     miniFrame.Visible = false
 end)
 
--- Контейнер
-local container = Instance.new("Frame", mainFrame)
-container.Position = UDim2.new(0, 130, 0, 46)
-container.Size = UDim2.new(1, -140, 1, -56)
-container.BackgroundTransparency = 1
-
--- Вкладка Фарм
-local farmTab = Instance.new("ScrollingFrame", container)
-farmTab.Size = UDim2.new(1, 0, 1, 0)
-farmTab.BackgroundTransparency = 1
-farmTab.CanvasSize = UDim2.new(0, 0, 1.5, 0)
-farmTab.ScrollBarThickness = 2
-Instance.new("UIListLayout", farmTab).Padding = UDim.new(0, 8)
-
 local farmTabBtn = Instance.new("TextButton", sidebar)
 farmTabBtn.Size = UDim2.new(0, 100, 0, 30)
 farmTabBtn.Position = UDim2.new(0, 10, 0, 50)
@@ -227,24 +211,31 @@ farmTabBtn.Font = Enum.Font.GothamBold
 farmTabBtn.TextSize = 11
 Instance.new("UICorner", farmTabBtn).CornerRadius = UDim.new(0, 4)
 
--- ====== СОДЕРЖИМОЕ ФАРМА ======
-local farmTitle = Instance.new("TextLabel", farmTab)
+-- Контент (простой Frame, без ScrollingFrame)
+local content = Instance.new("Frame", mainFrame)
+content.Position = UDim2.new(0, 130, 0, 46)
+content.Size = UDim2.new(1, -140, 1, -56)
+content.BackgroundTransparency = 1
+
+-- ====== ФАРМ ======
+local farmTitle = Instance.new("TextLabel", content)
 farmTitle.Size = UDim2.new(1, 0, 0, 20)
 farmTitle.BackgroundTransparency = 1
-farmTitle.Text = "ПРОГРАММА «МОЛОТ» v6.1"
+farmTitle.Text = "ПРОГРАММА «МОЛОТ» v6.2"
 farmTitle.TextColor3 = Theme.TextMain
 farmTitle.Font = Enum.Font.GothamBold
 farmTitle.TextSize = 12
 farmTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-local carFrame = Instance.new("Frame", farmTab)
-carFrame.Size = UDim2.new(1, 0, 0, 35)
+local carFrame = Instance.new("Frame", content)
+carFrame.Size = UDim2.new(1, 0, 0, 32)
+carFrame.Position = UDim2.new(0, 0, 0, 24)
 carFrame.BackgroundColor3 = Theme.InnerBg
-Instance.new("UICorner", carFrame).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", carFrame).CornerRadius = UDim.new(0, 5)
 
 local carLabel = Instance.new("TextLabel", carFrame)
-carLabel.Size = UDim2.new(1, -20, 1, 0)
-carLabel.Position = UDim2.new(0, 10, 0, 0)
+carLabel.Size = UDim2.new(1, -16, 1, 0)
+carLabel.Position = UDim2.new(0, 8, 0, 0)
 carLabel.BackgroundTransparency = 1
 carLabel.Text = "🚗 Ищу машину..."
 carLabel.TextColor3 = Theme.TextSub
@@ -252,8 +243,9 @@ carLabel.Font = Enum.Font.GothamBold
 carLabel.TextSize = 11
 carLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local statsLabel = Instance.new("TextLabel", farmTab)
+local statsLabel = Instance.new("TextLabel", content)
 statsLabel.Size = UDim2.new(1, 0, 0, 18)
+statsLabel.Position = UDim2.new(0, 0, 0, 60)
 statsLabel.BackgroundTransparency = 1
 statsLabel.Text = "Ударов: 0 | Сломано: 0 | Авто: 0"
 statsLabel.TextColor3 = Theme.TextSub
@@ -293,8 +285,9 @@ local function doHit()
     return false
 end
 
-local hammerBtn = Instance.new("TextButton", farmTab)
-hammerBtn.Size = UDim2.new(1, 0, 0, 40)
+local hammerBtn = Instance.new("TextButton", content)
+hammerBtn.Size = UDim2.new(1, 0, 0, 38)
+hammerBtn.Position = UDim2.new(0, 0, 0, 84)
 hammerBtn.BackgroundColor3 = Theme.BtnBg
 hammerBtn.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ"
 hammerBtn.TextColor3 = Theme.StatusOffline
@@ -329,8 +322,9 @@ hammerBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ====== АВТОФАРМ ======
-local autoBtn = Instance.new("TextButton", farmTab)
-autoBtn.Size = UDim2.new(1, 0, 0, 40)
+local autoBtn = Instance.new("TextButton", content)
+autoBtn.Size = UDim2.new(1, 0, 0, 38)
+autoBtn.Position = UDim2.new(0, 0, 0, 130)
 autoBtn.BackgroundColor3 = Theme.BtnBg
 autoBtn.Text = "🤖 АВТО-ФАРМ"
 autoBtn.TextColor3 = Theme.TextSub
