@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v6.10 - CLEAR STATUS ]] --
+-- [[ DAMIR_DRUN67 HUB v6.11 - SPAWN 35/40 ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -53,7 +53,7 @@ local function clickSpawn()
     pcall(function()
         local v = game:GetService("VirtualInputManager")
         local p = b.AbsolutePosition + b.AbsoluteSize/2
-        p = Vector2.new(p.X+35, p.Y+35)
+        p = Vector2.new(p.X+35, p.Y+40)
         v:SendMouseButtonEvent(p.X, p.Y, 0, true, game, 1)
         wait(0.05)
         v:SendMouseButtonEvent(p.X, p.Y, 0, false, game, 1)
@@ -92,7 +92,7 @@ ct.Position = UDim2.new(0,130,0,10) ct.Size = UDim2.new(1,-140,1,-20) ct.Backgro
 
 local ft = Instance.new("TextLabel", ct)
 ft.Size = UDim2.new(1,0,0,20) ft.BackgroundTransparency = 1
-ft.Text = "ПРОГРАММА «МОЛОТ» v6.10" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
+ft.Text = "ПРОГРАММА «МОЛОТ» v6.11" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
 
 local cf = Instance.new("Frame", ct)
 cf.Size = UDim2.new(1,0,0,32) cf.Position = UDim2.new(0,0,0,24) cf.BackgroundColor3 = T.Bg
@@ -128,10 +128,7 @@ local function doHit()
     wait(0.15)
     r.Velocity = Vector3.new(0, -1500, 0)
     wait(1.0)
-    if not c.Parent then
-        carsDestroyed = carsDestroyed + 1
-        return true
-    end
+    if not c.Parent then carsDestroyed = carsDestroyed + 1 return true end
     return false
 end
 
@@ -182,20 +179,11 @@ Instance.new("UICorner", hb).CornerRadius = UDim.new(0,6)
 hb.MouseButton1Click:Connect(function()
     hammerActive = not hammerActive
     if hammerActive then
-        if autoActive then
-            autoActive = false
-            ab.Text = "🤖 АВТО-ФАРМ"
-            ab.TextColor3 = T.Grey
-            ab.BackgroundColor3 = T.Btn
-        end
-        hb.Text = "🔨 МОЛОТ АКТИВИРОВАН"
-        hb.TextColor3 = T.Green
-        hb.BackgroundColor3 = Color3.fromRGB(20,35,30)
+        if autoActive then autoActive = false ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn end
+        hb.Text = "🔨 МОЛОТ АКТИВИРОВАН" hb.TextColor3 = T.Green hb.BackgroundColor3 = Color3.fromRGB(20,35,30)
         coroutine.wrap(hammerLoop)()
     else
-        hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ"
-        hb.TextColor3 = T.Red
-        hb.BackgroundColor3 = T.Btn
+        hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn
     end
 end)
 
@@ -207,19 +195,10 @@ Instance.new("UICorner", ab).CornerRadius = UDim.new(0,6)
 ab.MouseButton1Click:Connect(function()
     autoActive = not autoActive
     if autoActive then
-        if hammerActive then
-            hammerActive = false
-            hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ"
-            hb.TextColor3 = T.Red
-            hb.BackgroundColor3 = T.Btn
-        end
-        ab.Text = "🤖 АВТО-ФАРМ АКТИВИРОВАН"
-        ab.TextColor3 = T.Green
-        ab.BackgroundColor3 = Color3.fromRGB(40,25,10)
+        if hammerActive then hammerActive = false hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn end
+        ab.Text = "🤖 АВТО-ФАРМ АКТИВИРОВАН" ab.TextColor3 = T.Green ab.BackgroundColor3 = Color3.fromRGB(40,25,10)
         coroutine.wrap(autoLoop)()
     else
-        ab.Text = "🤖 АВТО-ФАРМ"
-        ab.TextColor3 = T.Grey
-        ab.BackgroundColor3 = T.Btn
+        ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn
     end
 end)
