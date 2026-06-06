@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v6.7 - FIXED HAMMER + SPAWN 40 ]] --
+-- [[ DAMIR_DRUN67 HUB v6.10 - CLEAR STATUS ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -53,7 +53,7 @@ local function clickSpawn()
     pcall(function()
         local v = game:GetService("VirtualInputManager")
         local p = b.AbsolutePosition + b.AbsoluteSize/2
-        p = Vector2.new(p.X, p.Y + 40)
+        p = Vector2.new(p.X+35, p.Y+35)
         v:SendMouseButtonEvent(p.X, p.Y, 0, true, game, 1)
         wait(0.05)
         v:SendMouseButtonEvent(p.X, p.Y, 0, false, game, 1)
@@ -68,7 +68,7 @@ local sg = Instance.new("ScreenGui", g) sg.Name = "SpeedHub" sg.ResetOnSpawn = f
 
 local m = Instance.new("Frame", sg)
 m.AnchorPoint = Vector2.new(0.5,0.5) m.Position = UDim2.new(0.5,0,0.4,0)
-m.Size = UDim2.new(0,480,0,260) m.BackgroundColor3 = T.Main m.BorderSizePixel = 0 m.Active = true m.Draggable = true m.ClipsDescendants = true
+m.Size = UDim2.new(0,480,0,260) m.BackgroundColor3 = T.Main m.BorderSizePixel = 0 m.Active = true m.Draggable = true
 Instance.new("UICorner", m).CornerRadius = UDim.new(0,8)
 Instance.new("UIStroke", m).Thickness = 1
 Instance.new("UIStroke", m).Color = Color3.fromRGB(38,42,56)
@@ -92,7 +92,7 @@ ct.Position = UDim2.new(0,130,0,10) ct.Size = UDim2.new(1,-140,1,-20) ct.Backgro
 
 local ft = Instance.new("TextLabel", ct)
 ft.Size = UDim2.new(1,0,0,20) ft.BackgroundTransparency = 1
-ft.Text = "ПРОГРАММА «МОЛОТ» v6.7" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
+ft.Text = "ПРОГРАММА «МОЛОТ» v6.10" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
 
 local cf = Instance.new("Frame", ct)
 cf.Size = UDim2.new(1,0,0,32) cf.Position = UDim2.new(0,0,0,24) cf.BackgroundColor3 = T.Bg
@@ -111,14 +111,67 @@ spawn(function() while wait(0.3) do pcall(function()
     if c then cl.Text = "🚗 " .. c.Name cl.TextColor3 = T.Blue else cl.Text = "🚗 Сядьте в машину!" cl.TextColor3 = T.Red end
 end) end end)
 
-local ha, aa, hh, cd, afc = false, false, 0, 0, 0
+-- ====== МОЛОТ ======
+local hammerActive = false
+local autoActive = false
+local hammerHits = 0
+local carsDestroyed = 0
+local autoCycles = 0
 
 local function doHit()
-    local c = getMyCar() if not c then return false end
-    local r = c.PrimaryPart or c:FindFirstChildWhichIsA("BasePart") if not r then return false end
-    r.Velocity = Vector3.zero r.CFrame = CFrame.new(r.Position.X, 200, r.Position.Z)
-    wait(0.15) r.Velocity = Vector3.new(0, -1500, 0) wait(1.0)
-    if not c.Parent then cd = cd + 1 return true end return false
+    local c = getMyCar()
+    if not c then return false end
+    local r = c.PrimaryPart or c:FindFirstChildWhichIsA("BasePart")
+    if not r then return false end
+    r.Velocity = Vector3.zero
+    r.CFrame = CFrame.new(r.Position.X, 200, r.Position.Z)
+    wait(0.15)
+    r.Velocity = Vector3.new(0, -1500, 0)
+    wait(1.0)
+    if not c.Parent then
+        carsDestroyed = carsDestroyed + 1
+        return true
+    end
+    return false
+end
+
+local function hammerLoop()
+    while hammerActive do
+        doHit()
+        hammerHits = hammerHits + 1
+        sl.Text = "Ударов: "..hammerHits.." | Сломано: "..carsDestroyed.." | Авто: "..autoCycles
+        wait(0.3)
+    end
+end
+
+local function autoLoop()
+    while autoActive do
+        local c = getMyCar()
+        if not c then
+            cl.Text = "🚗 Респавн..."
+            clickSpawn()
+            wait(3)
+        else
+            local destroyed = false
+            for i = 1, 20 do
+                if not autoActive then break end
+                destroyed = doHit()
+                hammerHits = hammerHits + 1
+                sl.Text = "Ударов: "..hammerHits.." | Сломано: "..carsDestroyed.." | Авто: "..autoCycles
+                if destroyed then break end
+                wait(0.2)
+            end
+            if destroyed then
+                autoCycles = autoCycles + 1
+                sl.Text = "Ударов: "..hammerHits.." | Сломано: "..carsDestroyed.." | Авто: "..autoCycles
+                cl.Text = "💀 Уничтожена!"
+                wait(1)
+                cl.Text = "🚗 Респавн..."
+                clickSpawn()
+                wait(3)
+            end
+        end
+    end
 end
 
 local hb = Instance.new("TextButton", ct)
@@ -127,14 +180,22 @@ hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.Font = Enu
 Instance.new("UICorner", hb).CornerRadius = UDim.new(0,6)
 
 hb.MouseButton1Click:Connect(function()
-    ha = not ha
-    if ha then
-        aa = false
-        ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn
-        hb.Text = "🔨 МОЛОТ РАБОТАЕТ" hb.TextColor3 = T.Green hb.BackgroundColor3 = Color3.fromRGB(20,35,30)
-        spawn(function() while ha do doHit() hh = hh + 1 sl.Text = "Ударов: "..hh.." | Сломано: "..cd.." | Авто: "..afc wait(0.3) end end)
+    hammerActive = not hammerActive
+    if hammerActive then
+        if autoActive then
+            autoActive = false
+            ab.Text = "🤖 АВТО-ФАРМ"
+            ab.TextColor3 = T.Grey
+            ab.BackgroundColor3 = T.Btn
+        end
+        hb.Text = "🔨 МОЛОТ АКТИВИРОВАН"
+        hb.TextColor3 = T.Green
+        hb.BackgroundColor3 = Color3.fromRGB(20,35,30)
+        coroutine.wrap(hammerLoop)()
     else
-        hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn
+        hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ"
+        hb.TextColor3 = T.Red
+        hb.BackgroundColor3 = T.Btn
     end
 end)
 
@@ -144,23 +205,21 @@ ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.Font = Enum.Font.Go
 Instance.new("UICorner", ab).CornerRadius = UDim.new(0,6)
 
 ab.MouseButton1Click:Connect(function()
-    aa = not aa
-    if aa then
-        ha = false
-        hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn
-        ab.Text = "🤖 АВТО-ФАРМ РАБОТАЕТ" ab.TextColor3 = T.Green ab.BackgroundColor3 = Color3.fromRGB(40,25,10)
-        spawn(function()
-            while aa do
-                local c = getMyCar()
-                if not c then cl.Text = "🚗 Респавн..." clickSpawn() wait(3)
-                else
-                    local d = false
-                    for i = 1, 20 do if not aa then break end d = doHit() hh = hh + 1 sl.Text = "Ударов: "..hh.." | Сломано: "..cd.." | Авто: "..afc if d then break end wait(0.2) end
-                    if d then afc = afc + 1 sl.Text = "Ударов: "..hh.." | Сломано: "..cd.." | Авто: "..afc cl.Text = "💀 Уничтожена!" wait(1) cl.Text = "🚗 Респавн..." clickSpawn() wait(3) end
-                end
-            end
-        end)
+    autoActive = not autoActive
+    if autoActive then
+        if hammerActive then
+            hammerActive = false
+            hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ"
+            hb.TextColor3 = T.Red
+            hb.BackgroundColor3 = T.Btn
+        end
+        ab.Text = "🤖 АВТО-ФАРМ АКТИВИРОВАН"
+        ab.TextColor3 = T.Green
+        ab.BackgroundColor3 = Color3.fromRGB(40,25,10)
+        coroutine.wrap(autoLoop)()
     else
-        ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn
+        ab.Text = "🤖 АВТО-ФАРМ"
+        ab.TextColor3 = T.Grey
+        ab.BackgroundColor3 = T.Btn
     end
 end)
