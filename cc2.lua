@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v6.11 - SPAWN 35/40 ]] --
+-- [[ DAMIR_DRUN67 HUB v6.12 - SPAWN 75/40 ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -53,7 +53,7 @@ local function clickSpawn()
     pcall(function()
         local v = game:GetService("VirtualInputManager")
         local p = b.AbsolutePosition + b.AbsoluteSize/2
-        p = Vector2.new(p.X+35, p.Y+40)
+        p = Vector2.new(p.X+75, p.Y+40)
         v:SendMouseButtonEvent(p.X, p.Y, 0, true, game, 1)
         wait(0.05)
         v:SendMouseButtonEvent(p.X, p.Y, 0, false, game, 1)
@@ -92,7 +92,7 @@ ct.Position = UDim2.new(0,130,0,10) ct.Size = UDim2.new(1,-140,1,-20) ct.Backgro
 
 local ft = Instance.new("TextLabel", ct)
 ft.Size = UDim2.new(1,0,0,20) ft.BackgroundTransparency = 1
-ft.Text = "ПРОГРАММА «МОЛОТ» v6.11" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
+ft.Text = "ПРОГРАММА «МОЛОТ» v6.12" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
 
 local cf = Instance.new("Frame", ct)
 cf.Size = UDim2.new(1,0,0,32) cf.Position = UDim2.new(0,0,0,24) cf.BackgroundColor3 = T.Bg
