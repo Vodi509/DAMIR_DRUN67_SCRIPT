@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v6.6 - NO MINIMIZE ]] --
+-- [[ DAMIR_DRUN67 HUB v6.7 - FIXED HAMMER + SPAWN 40 ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -53,7 +53,7 @@ local function clickSpawn()
     pcall(function()
         local v = game:GetService("VirtualInputManager")
         local p = b.AbsolutePosition + b.AbsoluteSize/2
-        p = Vector2.new(p.X+35, p.Y+35)
+        p = Vector2.new(p.X, p.Y + 40)
         v:SendMouseButtonEvent(p.X, p.Y, 0, true, game, 1)
         wait(0.05)
         v:SendMouseButtonEvent(p.X, p.Y, 0, false, game, 1)
@@ -92,7 +92,7 @@ ct.Position = UDim2.new(0,130,0,10) ct.Size = UDim2.new(1,-140,1,-20) ct.Backgro
 
 local ft = Instance.new("TextLabel", ct)
 ft.Size = UDim2.new(1,0,0,20) ft.BackgroundTransparency = 1
-ft.Text = "ПРОГРАММА «МОЛОТ» v6.6" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
+ft.Text = "ПРОГРАММА «МОЛОТ» v6.7" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
 
 local cf = Instance.new("Frame", ct)
 cf.Size = UDim2.new(1,0,0,32) cf.Position = UDim2.new(0,0,0,24) cf.BackgroundColor3 = T.Bg
@@ -129,10 +129,13 @@ Instance.new("UICorner", hb).CornerRadius = UDim.new(0,6)
 hb.MouseButton1Click:Connect(function()
     ha = not ha
     if ha then
-        aa = false ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn
+        aa = false
+        ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn
         hb.Text = "🔨 МОЛОТ РАБОТАЕТ" hb.TextColor3 = T.Green hb.BackgroundColor3 = Color3.fromRGB(20,35,30)
         spawn(function() while ha do doHit() hh = hh + 1 sl.Text = "Ударов: "..hh.." | Сломано: "..cd.." | Авто: "..afc wait(0.3) end end)
-    else hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn end
+    else
+        hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn
+    end
 end)
 
 local ab = Instance.new("TextButton", ct)
@@ -143,7 +146,8 @@ Instance.new("UICorner", ab).CornerRadius = UDim.new(0,6)
 ab.MouseButton1Click:Connect(function()
     aa = not aa
     if aa then
-        ha = false hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn
+        ha = false
+        hb.Text = "🔨 ВКЛЮЧИТЬ МОЛОТ" hb.TextColor3 = T.Red hb.BackgroundColor3 = T.Btn
         ab.Text = "🤖 АВТО-ФАРМ РАБОТАЕТ" ab.TextColor3 = T.Green ab.BackgroundColor3 = Color3.fromRGB(40,25,10)
         spawn(function()
             while aa do
@@ -156,5 +160,7 @@ ab.MouseButton1Click:Connect(function()
                 end
             end
         end)
-    else ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn end
+    else
+        ab.Text = "🤖 АВТО-ФАРМ" ab.TextColor3 = T.Grey ab.BackgroundColor3 = T.Btn
+    end
 end)
