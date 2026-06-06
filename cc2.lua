@@ -1,9 +1,9 @@
--- [[ DAMIR_DRUN67 HUB v6.0 - SPEEDHUB GUI FINAL ]] --
+-- [[ DAMIR_DRUN67 HUB v6.1 - SPEEDHUB + MINIMIZE ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
--- ==================== ТЕМА SPEEDHUB ====================
+-- ==================== ТЕМА ====================
 local Theme = {
     MainBg = Color3.fromRGB(15, 16, 22),
     InnerBg = Color3.fromRGB(22, 24, 33),
@@ -14,8 +14,7 @@ local Theme = {
     TextMain = Color3.fromRGB(255, 255, 255),
     TextSub = Color3.fromRGB(125, 131, 150),
     AccentGlow = Color3.fromRGB(0, 200, 255),
-    Purple = Color3.fromRGB(160, 100, 255),
-    Orange = Color3.fromRGB(255, 140, 0)
+    Purple = Color3.fromRGB(160, 100, 255)
 }
 
 -- ==================== ПОИСК МАШИНЫ ====================
@@ -55,7 +54,7 @@ local function getMyCar()
     return nil
 end
 
--- ==================== ПОИСК КНОПКИ РЕСПАВНА ====================
+-- ==================== РЕСПАВН ====================
 local function findSpawn()
     local pg = localPlayer:WaitForChild("PlayerGui")
     for _, g in pairs(pg:GetChildren()) do
@@ -81,16 +80,14 @@ end
 local function clickSpawn()
     local btn = findSpawn()
     if not btn then return false end
-    local AUTO_OFFSET_X = 35
-    local AUTO_OFFSET_Y = 35
-    
+    local OX, OY = 35, 35
     if firesignal and btn.MouseButton1Click then
         pcall(function() firesignal(btn.MouseButton1Click) end)
     end
     pcall(function()
         local vim = game:GetService("VirtualInputManager")
         local pos = btn.AbsolutePosition + btn.AbsoluteSize / 2
-        pos = Vector2.new(pos.X + AUTO_OFFSET_X, pos.Y + AUTO_OFFSET_Y)
+        pos = Vector2.new(pos.X + OX, pos.Y + OY)
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, true, game, 1)
         wait(0.05)
         vim:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 1)
@@ -98,17 +95,40 @@ local function clickSpawn()
     return true
 end
 
--- ==================== GUI SPEEDHUB ====================
+-- ==================== GUI ====================
 local g = localPlayer:WaitForChild("PlayerGui")
 for _, v in pairs(g:GetChildren()) do
-    if v.Name == "SpeedHub" then v:Destroy() end
+    if v.Name == "SpeedHub" or v.Name == "MiniHub" then v:Destroy() end
 end
 
 local screenGui = Instance.new("ScreenGui", g)
 screenGui.Name = "SpeedHub"
 screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
 
+-- Мини-панель (свёрнутое окно)
+local miniFrame = Instance.new("Frame", screenGui)
+miniFrame.Name = "MiniHub"
+miniFrame.Size = UDim2.new(0, 130, 0, 28)
+miniFrame.Position = UDim2.new(0.02, 0, 0.1, 0)
+miniFrame.BackgroundColor3 = Theme.InnerBg
+miniFrame.BorderSizePixel = 0
+miniFrame.Visible = false
+miniFrame.Active = true
+miniFrame.Draggable = true
+miniFrame.ZIndex = 99
+Instance.new("UICorner", miniFrame).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", miniFrame).Thickness = 1
+Instance.new("UIStroke", miniFrame).Color = Theme.Purple
+
+local restoreBtn = Instance.new("TextButton", miniFrame)
+restoreBtn.Size = UDim2.new(1, 0, 1, 0)
+restoreBtn.BackgroundTransparency = 1
+restoreBtn.Text = "⚡ DAMIR HUB"
+restoreBtn.TextColor3 = Theme.StatusOffline
+restoreBtn.Font = Enum.Font.GothamBold
+restoreBtn.TextSize = 12
+
+-- Главное окно
 local mainFrame = Instance.new("Frame", screenGui)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Position = UDim2.new(0.5, 0, 0.4, 0)
@@ -118,18 +138,55 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.ClipsDescendants = true
+mainFrame.ZIndex = 100
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 8)
 Instance.new("UIStroke", mainFrame).Thickness = 1
 Instance.new("UIStroke", mainFrame).Color = Theme.StrokeDefault
 
+-- Заголовок окна
+local titleBar = Instance.new("Frame", mainFrame)
+titleBar.Size = UDim2.new(1, 0, 0, 36)
+titleBar.BackgroundColor3 = Theme.InnerBg
+titleBar.BorderSizePixel = 0
+Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 8)
+
+local titleText = Instance.new("TextLabel", titleBar)
+titleText.Size = UDim2.new(1, -50, 1, 0)
+titleText.Position = UDim2.new(0, 14, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "🐱 DAMIR HUB v6.1"
+titleText.TextColor3 = Theme.TextMain
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 13
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Кнопка закрытия
+local closeBtn = Instance.new("TextButton", titleBar)
+closeBtn.Size = UDim2.new(0, 22, 0, 22)
+closeBtn.Position = UDim2.new(1, -30, 0, 7)
+closeBtn.BackgroundColor3 = Theme.StatusOffline
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 12
+closeBtn.BorderSizePixel = 0
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 11)
+
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Боковая панель
 local sidebar = Instance.new("Frame", mainFrame)
-sidebar.Size = UDim2.new(0, 120, 1, 0)
+sidebar.Size = UDim2.new(0, 120, 1, -36)
+sidebar.Position = UDim2.new(0, 0, 0, 36)
 sidebar.BackgroundColor3 = Theme.InnerBg
 sidebar.BorderSizePixel = 0
 Instance.new("UIStroke", sidebar).Thickness = 1
 Instance.new("UIStroke", sidebar).Color = Theme.StrokeDefault
 
-local logoLabel = Instance.new("TextLabel", sidebar)
+-- Кнопка сворачивания (надпись DAMIR HUB)
+local logoLabel = Instance.new("TextButton", sidebar)
 logoLabel.Size = UDim2.new(1, 0, 0, 40)
 logoLabel.BackgroundTransparency = 1
 logoLabel.Text = "DAMIR HUB"
@@ -137,9 +194,19 @@ logoLabel.TextColor3 = Theme.StatusOffline
 logoLabel.Font = Enum.Font.GothamBold
 logoLabel.TextSize = 14
 
+logoLabel.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    miniFrame.Visible = true
+end)
+restoreBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    miniFrame.Visible = false
+end)
+
+-- Контейнер
 local container = Instance.new("Frame", mainFrame)
-container.Position = UDim2.new(0, 130, 0, 10)
-container.Size = UDim2.new(1, -140, 1, -20)
+container.Position = UDim2.new(0, 130, 0, 46)
+container.Size = UDim2.new(1, -140, 1, -56)
 container.BackgroundTransparency = 1
 
 -- Вкладка Фарм
@@ -148,9 +215,7 @@ farmTab.Size = UDim2.new(1, 0, 1, 0)
 farmTab.BackgroundTransparency = 1
 farmTab.CanvasSize = UDim2.new(0, 0, 1.5, 0)
 farmTab.ScrollBarThickness = 2
-farmTab.Visible = true
-local farmLayout = Instance.new("UIListLayout", farmTab)
-farmLayout.Padding = UDim.new(0, 8)
+Instance.new("UIListLayout", farmTab).Padding = UDim.new(0, 8)
 
 local farmTabBtn = Instance.new("TextButton", sidebar)
 farmTabBtn.Size = UDim2.new(0, 100, 0, 30)
@@ -162,17 +227,16 @@ farmTabBtn.Font = Enum.Font.GothamBold
 farmTabBtn.TextSize = 11
 Instance.new("UICorner", farmTabBtn).CornerRadius = UDim.new(0, 4)
 
--- Заголовок фарма
+-- ====== СОДЕРЖИМОЕ ФАРМА ======
 local farmTitle = Instance.new("TextLabel", farmTab)
 farmTitle.Size = UDim2.new(1, 0, 0, 20)
 farmTitle.BackgroundTransparency = 1
-farmTitle.Text = "ПРОГРАММА «МОЛОТ» v6.0"
+farmTitle.Text = "ПРОГРАММА «МОЛОТ» v6.1"
 farmTitle.TextColor3 = Theme.TextMain
 farmTitle.Font = Enum.Font.GothamBold
 farmTitle.TextSize = 12
 farmTitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- Инфо о машине
 local carFrame = Instance.new("Frame", farmTab)
 carFrame.Size = UDim2.new(1, 0, 0, 35)
 carFrame.BackgroundColor3 = Theme.InnerBg
@@ -188,7 +252,6 @@ carLabel.Font = Enum.Font.GothamBold
 carLabel.TextSize = 11
 carLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Статистика
 local statsLabel = Instance.new("TextLabel", farmTab)
 statsLabel.Size = UDim2.new(1, 0, 0, 18)
 statsLabel.BackgroundTransparency = 1
@@ -198,7 +261,6 @@ statsLabel.Font = Enum.Font.Gotham
 statsLabel.TextSize = 10
 statsLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Обновление машины
 spawn(function()
     while wait(0.3) do
         pcall(function()
@@ -214,7 +276,7 @@ spawn(function()
     end
 end)
 
--- ==================== МОЛОТ ====================
+-- ====== МОЛОТ ======
 local ha, aa, hh, cd, afc = false, false, 0, 0, 0
 
 local function doHit()
@@ -231,7 +293,6 @@ local function doHit()
     return false
 end
 
--- Кнопка Молот
 local hammerBtn = Instance.new("TextButton", farmTab)
 hammerBtn.Size = UDim2.new(1, 0, 0, 40)
 hammerBtn.BackgroundColor3 = Theme.BtnBg
@@ -267,7 +328,7 @@ hammerBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Кнопка Автофарм
+-- ====== АВТОФАРМ ======
 local autoBtn = Instance.new("TextButton", farmTab)
 autoBtn.Size = UDim2.new(1, 0, 0, 40)
 autoBtn.BackgroundColor3 = Theme.BtnBg
