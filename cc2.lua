@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v6.12 - SPAWN 75/40 ]] --
+-- [[ DAMIR_DRUN67 HUB v6.12 - SPAWN 45/40 ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -53,7 +53,7 @@ local function clickSpawn()
     pcall(function()
         local v = game:GetService("VirtualInputManager")
         local p = b.AbsolutePosition + b.AbsoluteSize/2
-        p = Vector2.new(p.X+75, p.Y+40)
+        p = Vector2.new(p.X+45, p.Y+40)
         v:SendMouseButtonEvent(p.X, p.Y, 0, true, game, 1)
         wait(0.05)
         v:SendMouseButtonEvent(p.X, p.Y, 0, false, game, 1)
