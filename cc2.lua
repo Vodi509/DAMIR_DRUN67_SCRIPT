@@ -1,4 +1,4 @@
--- [[ DAMIR_DRUN67 HUB v6.3 - CLEAN MINIMIZE ]] --
+-- [[ DAMIR_DRUN67 HUB v6.6 - NO MINIMIZE ]] --
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -23,9 +23,7 @@ local function getMyCar()
     local cur = h.SeatPart
     while cur do
         if cur:IsA("Model") and cur.Parent and cur.Parent.Name == "Vehicles" then return cur end
-        if cur:IsA("Model") and cur.Name ~= "Body" and cur.Name ~= "Engine" and cur.Name ~= "Wheels" and cur ~= c then
-            return cur
-        end
+        if cur:IsA("Model") and cur.Name ~= "Body" and cur.Name ~= "Engine" and cur.Name ~= "Wheels" and cur ~= c then return cur end
         cur = cur.Parent
     end
     return nil
@@ -65,53 +63,36 @@ end
 
 -- GUI
 local g = localPlayer:WaitForChild("PlayerGui")
-for _, v in pairs(g:GetChildren()) do if v.Name == "SH" or v.Name == "MH" then v:Destroy() end end
-local sg = Instance.new("ScreenGui", g) sg.Name = "SH" sg.ResetOnSpawn = false
+for _, v in pairs(g:GetChildren()) do if v.Name == "SpeedHub" then v:Destroy() end end
+local sg = Instance.new("ScreenGui", g) sg.Name = "SpeedHub" sg.ResetOnSpawn = false
 
--- Мини-панель
-local mn = Instance.new("Frame", sg) mn.Name = "MH"
-mn.Size = UDim2.new(0,120,0,26) mn.Position = UDim2.new(0.02,0,0.1,0)
-mn.BackgroundColor3 = T.Bg mn.BorderSizePixel = 0 mn.Visible = false mn.Active = true mn.Draggable = true mn.ZIndex = 99
-Instance.new("UICorner", mn).CornerRadius = UDim.new(0,6)
-Instance.new("UIStroke", mn).Thickness = 1
-Instance.new("UIStroke", mn).Color = T.Purple
-
-local rb = Instance.new("TextButton", mn)
-rb.Size = UDim2.new(1,0,1,0) rb.BackgroundTransparency = 1
-rb.Text = "⚡ DAMIR HUB" rb.TextColor3 = T.Red rb.Font = Enum.Font.GothamBold rb.TextSize = 11
-
--- Главное окно
 local m = Instance.new("Frame", sg)
 m.AnchorPoint = Vector2.new(0.5,0.5) m.Position = UDim2.new(0.5,0,0.4,0)
-m.Size = UDim2.new(0,480,0,260) m.BackgroundColor3 = T.Main m.BorderSizePixel = 0 m.Active = true m.Draggable = true m.ClipsDescendants = true m.ZIndex = 100
+m.Size = UDim2.new(0,480,0,260) m.BackgroundColor3 = T.Main m.BorderSizePixel = 0 m.Active = true m.Draggable = true m.ClipsDescendants = true
 Instance.new("UICorner", m).CornerRadius = UDim.new(0,8)
 Instance.new("UIStroke", m).Thickness = 1
 Instance.new("UIStroke", m).Color = Color3.fromRGB(38,42,56)
 
--- Боковая панель
 local sb = Instance.new("Frame", m)
 sb.Size = UDim2.new(0,120,1,0) sb.BackgroundColor3 = T.Bg sb.BorderSizePixel = 0
 Instance.new("UIStroke", sb).Thickness = 1
 Instance.new("UIStroke", sb).Color = Color3.fromRGB(38,42,56)
 
-local logo = Instance.new("TextButton", sb)
+local logo = Instance.new("TextLabel", sb)
 logo.Size = UDim2.new(1,0,0,40) logo.BackgroundTransparency = 1
 logo.Text = "DAMIR HUB" logo.TextColor3 = T.Red logo.Font = Enum.Font.GothamBold logo.TextSize = 14
-logo.MouseButton1Click:Connect(function() m.Visible = false mn.Visible = true end)
-rb.MouseButton1Click:Connect(function() m.Visible = true mn.Visible = false end)
 
 local tb = Instance.new("TextButton", sb)
 tb.Size = UDim2.new(0,100,0,30) tb.Position = UDim2.new(0,10,0,50)
 tb.BackgroundColor3 = T.Purple tb.Text = "🚀 Авто Фарм" tb.TextColor3 = T.White tb.Font = Enum.Font.GothamBold tb.TextSize = 11
 Instance.new("UICorner", tb).CornerRadius = UDim.new(0,4)
 
--- Контент
 local ct = Instance.new("Frame", m)
 ct.Position = UDim2.new(0,130,0,10) ct.Size = UDim2.new(1,-140,1,-20) ct.BackgroundTransparency = 1
 
 local ft = Instance.new("TextLabel", ct)
 ft.Size = UDim2.new(1,0,0,20) ft.BackgroundTransparency = 1
-ft.Text = "ПРОГРАММА «МОЛОТ» v6.5" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
+ft.Text = "ПРОГРАММА «МОЛОТ» v6.6" ft.TextColor3 = T.White ft.Font = Enum.Font.GothamBold ft.TextSize = 12 ft.TextXAlignment = Enum.TextXAlignment.Left
 
 local cf = Instance.new("Frame", ct)
 cf.Size = UDim2.new(1,0,0,32) cf.Position = UDim2.new(0,0,0,24) cf.BackgroundColor3 = T.Bg
